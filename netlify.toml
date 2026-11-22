@@ -1,0 +1,18 @@
+# Netlify: build the frontend and serve it as a single-page app.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Set VITE_API_URL here or in Site settings → Environment variables to connect the AI server.
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
