@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Check, ChevronDown, Plus, FileText, Wand2 } from 'lucide-react';
+import { ChevronDown, Plus, FileText, Wand2 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Logo from '../components/brand/Logo';
 import PaletteStrip from '../components/brand/PaletteStrip';
 import ScaledFrame from '../components/social/ScaledFrame';
 import { InstagramPost, InstagramStory } from '../components/social/SocialDesigns';
 import { BoxMockup, CardFront } from '../components/mockups/Mockups';
+import { Background, COVERS, CoverDesign } from '../components/brand/BrandKit';
+import { BG_STYLES } from '../lib/backgrounds';
 import Footer from '../components/layout/Footer';
 import { useI18n } from '../i18n/I18nContext';
 import { buildSampleProjects } from '../data/sampleProjects';
@@ -189,6 +191,16 @@ export default function Landing() {
               ))}
             </div>
           </Deliverable>
+          <Deliverable className="md:col-span-6" title={t('landing.d6')} sub={t('landing.d6s')}>
+            <div className="grid gap-2 lg:grid-cols-[1.4fr_1fr]">
+              <div className="overflow-hidden rounded-lg"><ScaledFrame width={750} height={250}><CoverDesign cover={COVERS[0]} styleId="girih" project={hero} concept={hc} /></ScaledFrame></div>
+              <div className="grid grid-cols-3 gap-2">
+                {BG_STYLES.filter((b) => b.id !== 'girih').slice(0, 6).map((b) => (
+                  <Background key={b.id} styleId={b.id} concept={hc} name={hero.input.name} w={320} h={200} className="aspect-[16/10] overflow-hidden rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </Deliverable>
         </div>
       </Section>
 
@@ -227,24 +239,6 @@ export default function Landing() {
               </Link>
             );
           })}
-        </div>
-      </Section>
-
-      {/* Pricing */}
-      <Section id="pricing" title={t('landing.pricingTitle')} className="border-t border-line">
-        <div className="grid gap-4 lg:grid-cols-3">
-          {t('landing.plans').map((plan) => (
-            <div key={plan.name} className={`relative flex flex-col rounded-[20px] border p-7 ${plan.featured ? 'border-amethyst/60 bg-[linear-gradient(180deg,rgba(155,107,255,.14),rgba(155,107,255,.02))]' : 'border-line bg-surface'}`}>
-              {plan.featured && <span className="absolute -top-3 start-7 rounded-full bg-amethyst px-3 py-1 text-xs font-medium text-white">{t('landing.popular')}</span>}
-              <h3 className="font-display text-xl font-semibold">{plan.name}</h3>
-              <p className="mt-1 text-sm text-mute">{plan.desc}</p>
-              <div className="mt-6 flex items-baseline gap-1"><span className="font-display text-5xl font-semibold">{plan.price}</span><span className="text-mute">{t('landing.perMonth')}</span></div>
-              <ul className="mt-6 flex-1 space-y-3 text-sm">
-                {plan.features.map((f) => <li key={f} className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lilac" />{f}</li>)}
-              </ul>
-              <Button className="mt-8" variant={plan.featured ? 'primary' : 'subtle'} to="/create">{plan.cta}</Button>
-            </div>
-          ))}
         </div>
       </Section>
 

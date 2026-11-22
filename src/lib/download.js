@@ -1,5 +1,6 @@
 import { toPng } from 'html-to-image';
 import { buildLogoSvg, embeddedFontCss, ensureFonts } from './logoSvg';
+import { buildBackgroundSvg } from './backgrounds';
 import { slugify } from './generator';
 
 export function downloadBlob(blob, filename) {
@@ -49,9 +50,9 @@ export async function standaloneLogoSvg(opts) {
   return buildLogoSvg({ ...opts, fontCss });
 }
 
-export async function downloadLogo({ format, name, concept, variant = 'primary', layout, logo, width = 2000 }) {
-  const svg = await standaloneLogoSvg({ name, concept, variant, layout, logo });
-  const base = `${slugify(name)}-logo-${layout || concept.logo.layout}-${variant}`;
+export async function downloadLogo({ format, name, concept, variant = 'primary', layout, logo, width = 2000, background, filename }) {
+  const svg = await standaloneLogoSvg({ name, concept, variant, layout, logo, background });
+  const base = filename || `${slugify(name)}-logo-${layout || concept.logo.layout}-${variant}`;
   if (format === 'svg') {
     downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${base}.svg`);
   } else {
@@ -82,4 +83,13 @@ export async function nodeToPng(node, pixelRatio = 2) {
 export async function downloadNode(node, filename, pixelRatio = 2) {
   const png = await nodeToPng(node, pixelRatio);
   downloadDataUrl(png, filename);
+}
+
+export async function downloadBackground({ format, styleId, concept, name, w, h, label }) {
+  await ensureFonts(concept, name);
+  const fontCss = styleId === 'monogram' || /letter|monogram|hexagon|bubble|seal/.test(concept.logo.mark) ? await embeddedFontCss(concept, name) : '';
+  const svg = buildBackgroundSvg(styleId, concept, name, w, h, { fontCss });
+  const base = `${slugify(name)}-background-${styleId}-${label}`;
+  if (format === 'svg') downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${base}.svg`);
+  else downloadDataUrl(await svgToPngDataUrl(svg, w), `${base}.png`);
 }

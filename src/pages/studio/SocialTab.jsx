@@ -3,7 +3,7 @@ import ScaledFrame from '../../components/social/ScaledFrame';
 import { InstagramPost, InstagramStory } from '../../components/social/SocialDesigns';
 import { useI18n } from '../../i18n/I18nContext';
 import { downloadNode } from '../../lib/download';
-import { slugify } from '../../lib/generator';
+import { slugify, extraSocial } from '../../lib/generator';
 import { Heading, DownloadButtons, CopyButton, useAsyncAction } from './shared';
 
 function Exportable({ width, height, ratio, filename, busy, run, id, children, footer, className }) {
@@ -24,7 +24,10 @@ export default function SocialTab({ project, concept }) {
   const [busy, run] = useAsyncAction();
   const slug = slugify(project.input.name);
   const dir = project.input.language === 'ar' ? 'rtl' : 'ltr';
-  const { posts, stories, hashtags } = concept.social;
+  const extra = extraSocial(project, concept);
+  const posts = [...concept.social.posts, ...extra.posts];
+  const stories = [...concept.social.stories, ...extra.stories];
+  const { hashtags } = concept.social;
 
   return (
     <div className="space-y-14">
@@ -53,7 +56,7 @@ export default function SocialTab({ project, concept }) {
               <InstagramStory project={project} concept={concept} story={story} />
             </Exportable>
           ))}
-          <div className="panel flex flex-col p-6 sm:col-span-2">
+          <div className="panel flex flex-col p-6">
             <h3 className="font-display text-lg font-semibold">{t('studio.hashtags')}</h3>
             <div className="mt-4 flex flex-wrap gap-2" dir={dir}>
               {hashtags.map((h) => <span key={h} className="rounded-full border border-line-2 px-3 py-1 text-sm text-lilac">{h}</span>)}

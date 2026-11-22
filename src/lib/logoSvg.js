@@ -84,6 +84,64 @@ export function markSvg(mark, c, ch, family, weight) {
       return `<g transform="rotate(28 50 50)"><ellipse cx="50" cy="50" rx="32" ry="47" fill="${c.fill}"/><path d="M50 7C34 30 66 66 50 93" fill="none" stroke="${c.inner}" stroke-width="6.5" stroke-linecap="round"/></g><circle cx="88" cy="14" r="6" fill="${c.accent}"/>`;
     case 'shield':
       return `<path d="M50 3l40 14v31c0 26-17 42-40 50C27 90 10 74 10 48V17z" fill="${c.fill}"/><path d="M31 50l13 13 26-27" fill="none" stroke="${c.inner}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'star8':
+      return `<rect x="18" y="18" width="64" height="64" rx="5" fill="${c.fill}"/><rect x="18" y="18" width="64" height="64" rx="5" fill="${c.fill}" transform="rotate(45 50 50)"/><circle cx="50" cy="50" r="17" fill="${c.inner}"/><circle cx="50" cy="50" r="7" fill="${c.accent}"/>`;
+    case 'crown':
+      return `<path d="M10 76L16 28l20 24 14-32 14 32 20-24 6 48z" fill="${c.fill}" stroke-linejoin="round"/><rect x="10" y="82" width="80" height="11" rx="4" fill="${c.fill}"/><circle cx="16" cy="24" r="6" fill="${c.accent}"/><circle cx="50" cy="16" r="6" fill="${c.accent}"/><circle cx="84" cy="24" r="6" fill="${c.accent}"/>`;
+    case 'leaf':
+      return `<path d="M50 4C84 26 88 64 50 96 12 64 16 26 50 4z" fill="${c.fill}"/><path d="M50 22v68M50 46l15-12M50 62L35 50M50 76l12-9" fill="none" stroke="${c.inner}" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="14" r="6" fill="${c.accent}"/>`;
+    case 'drop':
+      return `<path d="M50 3S86 44 86 63a36 36 0 0 1-72 0C14 44 50 3 50 3z" fill="${c.fill}"/><path d="M32 64a18 18 0 0 0 18 18" fill="none" stroke="${c.inner}" stroke-width="6" stroke-linecap="round"/><circle cx="66" cy="44" r="6" fill="${c.accent}"/>`;
+    case 'flame':
+      return `<path d="M50 3c12 22 34 34 34 59a34 34 0 0 1-68 0c0-16 14-26 18-40 6 12 10 16 16 18 4-12 4-24 0-37z" fill="${c.fill}"/><path d="M50 52c8 10 16 16 16 25a16 16 0 0 1-32 0c0-9 10-15 16-25z" fill="${c.accent}"/>`;
+    case 'mountain':
+      return `<path d="M3 88L38 28l18 30 12-17 29 47z" fill="${c.fill}" stroke-linejoin="round"/><path d="M38 28L29 43l9-5 8 7z" fill="${c.inner}"/><circle cx="78" cy="20" r="10" fill="${c.accent}"/>`;
+    case 'sunrise':
+      return `<path d="M12 70a38 38 0 0 1 76 0z" fill="${c.fill}"/><rect x="12" y="50" width="76" height="4" fill="${c.inner}"/><rect x="12" y="60" width="76" height="4" fill="${c.inner}"/><rect x="4" y="76" width="92" height="7" rx="3.5" fill="${c.accent}"/><rect x="22" y="89" width="56" height="7" rx="3.5" fill="${c.fill}"/>`;
+    case 'infinity':
+      return `<path d="M50 50C40 26 8 26 8 50s32 24 42 0 42-24 42 0-32 24-42 0z" fill="none" stroke="${c.fill}" stroke-width="11" stroke-linejoin="round"/><circle cx="92" cy="22" r="6" fill="${c.accent}"/>`;
+    case 'chevrons':
+      return `<path d="M16 40L50 14l34 26" fill="none" stroke="${c.fill}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 64L50 38l34 26" fill="none" stroke="${c.fill}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 88L50 62l34 26" fill="none" stroke="${c.accent}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'mosaic':
+      return `<rect x="5" y="5" width="42" height="42" rx="10" fill="${c.fill}"/><path d="M53 47V5a42 42 0 0 1 42 42z" fill="${c.fill}"/><path d="M5 53h42v42A42 42 0 0 1 5 53z" fill="${c.fill}"/><rect x="53" y="53" width="42" height="42" rx="21" fill="${c.accent}"/>`;
+    case 'halves':
+      return `<path d="M47 2a44 44 0 0 0 0 88z" fill="${c.fill}"/><path d="M53 10a44 44 0 0 1 0 88z" fill="${c.accent}"/>`;
+    case 'prism':
+      return `<path d="M50 5L6 90h44z" fill="${c.fill}"/><path d="M50 5l44 85H50z" fill="${c.accent}"/>`;
+    case 'cube':
+      return `<path d="M50 5l42 23-42 23L8 28z" fill="${c.accent}"/><path d="M8 28l42 23v46L8 74z" fill="${c.fill}"/><path d="M92 28L50 51v46l42-23z" fill="${c.fill}" fill-opacity="0.72"/>`;
+    case 'lotus':
+      return ['-42', '42'].map((r) => `<path d="M50 20c14 20 14 42 0 62-14-20-14-42 0-62z" fill="${c.fill}" fill-opacity="0.7" transform="rotate(${r} 50 82)"/>`).join('')
+        + `<path d="M50 14c15 22 15 46 0 68-15-22-15-46 0-68z" fill="${c.fill}"/><circle cx="50" cy="91" r="5" fill="${c.accent}"/>`;
+    case 'bubble':
+      return `<path d="M15 6h70a11 11 0 0 1 11 11v46a11 11 0 0 1-11 11H46L24 94V74h-9A11 11 0 0 1 4 63V17A11 11 0 0 1 15 6z" fill="${c.fill}"/>${letter(ch, c, family, weight, 40, 40)}<circle cx="82" cy="20" r="5" fill="${c.accent}"/>`;
+    case 'seal': {
+      const pts = Array.from({ length: 48 }, (_, i) => {
+        const r = i % 2 ? 43 : 48; const a = (i * Math.PI) / 24;
+        return `${(50 + r * Math.cos(a)).toFixed(2)},${(50 + r * Math.sin(a)).toFixed(2)}`;
+      }).join(' ');
+      return `<polygon points="${pts}" fill="${c.fill}"/><circle cx="50" cy="50" r="35" fill="none" stroke="${c.inner}" stroke-width="2" stroke-dasharray="2 4"/>${letter(ch, c, family, weight, 40)}<circle cx="50" cy="78" r="3.5" fill="${c.accent}"/>`;
+    }
+    case 'heart':
+      return `<path d="M50 92C20 72 5 54 5 34a22 22 0 0 1 45-8 22 22 0 0 1 45 8c0 20-15 38-45 58z" fill="${c.fill}"/><path d="M24 30a10 10 0 0 1 10-9" fill="none" stroke="${c.inner}" stroke-width="5" stroke-linecap="round"/><circle cx="82" cy="12" r="6" fill="${c.accent}"/>`;
+    case 'bolt':
+      return `<path d="M60 3L15 58h31l-8 39 47-57H54z" fill="${c.fill}" stroke-linejoin="round"/><circle cx="86" cy="14" r="6" fill="${c.accent}"/>`;
+    case 'anchor':
+      return `<g fill="none" stroke-linecap="round" stroke-width="8"><circle cx="50" cy="15" r="9" stroke="${c.fill}"/><path d="M50 24v68" stroke="${c.fill}"/><path d="M14 58a36 36 0 0 0 72 0" stroke="${c.fill}"/><path d="M30 38h40" stroke="${c.accent}"/></g>`;
+    case 'compass':
+      return `<circle cx="50" cy="50" r="47" fill="${c.fill}"/><circle cx="50" cy="50" r="38" fill="none" stroke="${c.inner}" stroke-width="1.5" stroke-dasharray="1.5 5"/><path d="M50 12l11 38H39z" fill="${c.accent}"/><path d="M50 88L39 50h22z" fill="${c.inner}"/><circle cx="50" cy="50" r="5" fill="${c.fill}"/>`;
+    case 'feather':
+      return `<path d="M82 4C42 12 16 46 20 90c32-6 64-38 62-86z" fill="${c.fill}"/><path d="M14 96L70 22" fill="none" stroke="${c.inner}" stroke-width="4" stroke-linecap="round"/><path d="M44 62l18 2M54 48l16 1" fill="none" stroke="${c.inner}" stroke-width="3" stroke-linecap="round"/>`;
+    case 'palm':
+      return `<path d="M50 96c3-22-2-38 0-56" fill="none" stroke="${c.fill}" stroke-width="8" stroke-linecap="round"/>`
+        + ['M50 40C36 22 18 20 4 32c18-4 32 0 46 8z', 'M50 40C42 18 30 6 14 6c14 8 26 18 36 34z'].map((d) => `<path d="${d}" fill="${c.fill}"/><path d="${d}" fill="${c.fill}" transform="matrix(-1 0 0 1 100 0)"/>`).join('')
+        + `<circle cx="45" cy="47" r="4.5" fill="${c.accent}"/><circle cx="55" cy="47" r="4.5" fill="${c.accent}"/>`;
+    case 'knot':
+      return `<circle cx="37" cy="50" r="27" fill="none" stroke="${c.fill}" stroke-width="11"/><circle cx="63" cy="50" r="27" fill="none" stroke="${c.accent}" stroke-width="11"/><path d="M37 23a27 27 0 0 1 22 11" fill="none" stroke="${c.fill}" stroke-width="11"/>`;
+    case 'cup':
+      return `<path d="M50 4c-5 7 5 10 0 17M36 8c-4 6 4 8 0 13M64 8c-4 6 4 8 0 13" fill="none" stroke="${c.accent}" stroke-width="4" stroke-linecap="round"/><path d="M14 28h60v30a24 24 0 0 1-24 24H38a24 24 0 0 1-24-24z" fill="${c.fill}"/><path d="M74 36h5a12 12 0 0 1 0 24h-6" fill="none" stroke="${c.fill}" stroke-width="7"/><rect x="6" y="88" width="76" height="7" rx="3.5" fill="${c.fill}"/>`;
+    case 'house':
+      return `<path d="M8 46L50 8l42 38v48H8z" fill="${c.fill}" stroke-linejoin="round"/><path d="M38 94V68a12 12 0 0 1 24 0v26z" fill="${c.inner}"/><circle cx="50" cy="40" r="8" fill="${c.accent}"/>`;
     default:
       return `<circle cx="50" cy="50" r="48" fill="${c.fill}"/>${letter(ch, c, family, weight)}`;
   }
@@ -95,7 +153,7 @@ export function markSvg(mark, c, ch, family, weight) {
  * @param {object} o.concept concept with palette, fonts and logo
  * @param {object} [o.logo] override { mark, layout, colorway }
  * @param {'primary'|'inverse'|'mono'|'white'|'onPrimary'} [o.variant]
- * @param {'horizontal'|'stacked'|'icon'|'wordmark'} [o.layout]
+ * @param {'horizontal'|'stacked'|'icon'|'wordmark'|'emblem'} [o.layout]
  * @param {string} [o.fontCss] embedded @font-face CSS for standalone export
  * @param {string} [o.background] optional background fill
  */
@@ -111,7 +169,20 @@ export function buildLogoSvg({ name, concept, logo, variant = 'primary', layout,
   const text = (x, y, size) => `<text x="${x}" y="${y}" text-anchor="middle"${wm.arabic ? ' direction="rtl"' : ''} font-family="${esc(fontStack(wm.family))}" font-weight="${wm.weight}" font-size="${size}" letter-spacing="${(wm.tracking * size).toFixed(2)}" fill="${c.text}">${esc(wm.text)}</text>`;
 
   let w, h, body;
-  if (lay === 'icon') {
+  if (lay === 'emblem') {
+    // Circular badge: mark in the centre, brand name set on the upper arc.
+    const R = 92, size0 = 22;
+    const tw0 = measureText(wm.text, wm.family, wm.weight, size0, wm.tracking * size0 + 2);
+    const size = Math.min(size0, (size0 * 250) / Math.max(tw0, 1));
+    const id = `arc${++idCounter}`;
+    w = h = 240;
+    body = `<circle cx="120" cy="120" r="${R + 20}" fill="none" stroke="${c.fill}" stroke-width="5"/>`
+      + `<circle cx="120" cy="120" r="${R - 22}" fill="none" stroke="${c.fill}" stroke-width="1.5"/>`
+      + `<defs><path id="${id}" d="M${120 - R + 4} 120a${R - 4} ${R - 4} 0 0 1 ${2 * (R - 4)} 0"/></defs>`
+      + `<text font-family="${esc(fontStack(wm.family))}" font-weight="${wm.weight}" font-size="${size.toFixed(1)}" letter-spacing="${(wm.tracking * size + 2).toFixed(2)}" fill="${c.text}"${wm.arabic ? ' direction="rtl"' : ''}><textPath href="#${id}" startOffset="50%" text-anchor="middle">${esc(wm.text)}</textPath></text>`
+      + `<circle cx="${120 - R - 1}" cy="132" r="4" fill="${c.accent}"/><circle cx="${120 + R + 1}" cy="132" r="4" fill="${c.accent}"/>`
+      + mark(85, 92, 70);
+  } else if (lay === 'icon') {
     w = h = 100 + pad * 2;
     body = mark(pad, pad, 100);
   } else if (lay === 'wordmark') {

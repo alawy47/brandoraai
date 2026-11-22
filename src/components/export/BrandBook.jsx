@@ -7,13 +7,15 @@ import { rgbString, cmykString, readableOn, withAlpha } from '../../lib/color';
 import { fontStack } from '../../data/fonts';
 import { findCategory } from '../../data/options';
 import { translations } from '../../i18n/translations';
+import { Background, COVERS, CoverDesign, ProfileDesign } from '../brand/BrandKit';
+import { BG_STYLES, defaultBg } from '../../lib/backgrounds';
 
 export const PAGE_W = 1123;
 export const PAGE_H = 794;
 
 const L = {
-  en: { guidelines: 'Brand guidelines', contents: ['Brand story', 'Logo', 'Color', 'Typography', 'Social media', 'Print & packaging'], clear: 'Keep clear space equal to the height of the icon’s inner detail on every side. Never stretch, recolor outside the palette or add effects.', contact: 'Questions about using the brand?', page: 'Page', minSize: 'Minimum size: 24px digital, 12mm print.' },
-  ar: { guidelines: 'دليل الهوية البصرية', contents: ['قصة العلامة', 'الشعار', 'الألوان', 'الخطوط', 'التواصل الاجتماعي', 'المطبوعات والتغليف'], clear: 'حافظ على مساحة فارغة حول الشعار من كل الجهات، ولا تمطّه أو تغيّر ألوانه خارج اللوحة المعتمدة أو تضف إليه مؤثرات.', contact: 'لديك سؤال حول استخدام العلامة؟', page: 'صفحة', minSize: 'الحد الأدنى للحجم: ٢٤ بكسل رقميًا و١٢ ملم للطباعة.' },
+  en: { guidelines: 'Brand guidelines', contents: ['Brand story', 'Logo', 'Color', 'Typography', 'Social media', 'Print & packaging', 'Backgrounds & covers'], clear: 'Keep clear space equal to the height of the icon’s inner detail on every side. Never stretch, recolor outside the palette or add effects.', contact: 'Questions about using the brand?', page: 'Page', minSize: 'Minimum size: 24px digital, 12mm print.' },
+  ar: { guidelines: 'دليل الهوية البصرية', contents: ['قصة العلامة', 'الشعار', 'الألوان', 'الخطوط', 'التواصل الاجتماعي', 'المطبوعات والتغليف', 'الخلفيات وصور الغلاف'], clear: 'حافظ على مساحة فارغة حول الشعار من كل الجهات، ولا تمطّه أو تغيّر ألوانه خارج اللوحة المعتمدة أو تضف إليه مؤثرات.', contact: 'لديك سؤال حول استخدام العلامة؟', page: 'صفحة', minSize: 'الحد الأدنى للحجم: ٢٤ بكسل رقميًا و١٢ ملم للطباعة.' },
 };
 
 function Fixed({ w, h, scale, children, style }) {
@@ -36,7 +38,7 @@ function Page({ children, bg, color, n, title, project, P, f, dir, lang }) {
       {children}
       {n && (
         <div style={{ position: 'absolute', bottom: 34, insetInline: 56, display: 'flex', justifyContent: 'space-between', fontSize: 11, opacity: 0.5 }}>
-          <span>{String(n).padStart(2, '0')}</span><span dir="ltr">{L[lang].page} {n} / 8</span>
+          <span>{String(n).padStart(2, '0')}</span><span dir="ltr">{L[lang].page} {n} / 9</span>
         </div>
       )}
     </div>
@@ -54,6 +56,8 @@ const BrandBook = forwardRef(function BrandBook({ project, concept }, ref) {
   const common = { project, P, f, dir, lang };
   const pack = findCategory(project.input.category).pack;
   const year = new Date().getFullYear();
+  const bgId = concept.background || defaultBg(project.input.personality);
+  const kitBgs = [bgId, ...BG_STYLES.map((b) => b.id).filter((id) => id !== bgId)].slice(0, 5).map((id) => BG_STYLES.find((b) => b.id === id));
 
   return (
     <div ref={ref} style={{ display: 'flex', flexDirection: 'column', gap: 20, width: PAGE_W }}>
@@ -157,8 +161,29 @@ const BrandBook = forwardRef(function BrandBook({ project, concept }, ref) {
         </div>
       </Page>
 
-      {/* 7. Print */}
-      <Page {...common} n={7} title={l.contents[5]} bg="#F3F2F5" color={P.dark}>
+      {/* 7. Backgrounds & covers */}
+      <Page {...common} n={7} title={l.contents[6]} bg="#FFFFFF" color={P.dark}>
+        <div style={{ position: 'absolute', top: 165, insetInline: 56, display: 'grid', gridTemplateColumns: '1fr 232px', gap: 16 }}>
+          <div style={{ display: 'grid', gap: 12 }}>
+            <Fixed w={750} h={250} scale={1}><CoverDesign cover={COVERS[0]} styleId={bgId} project={project} concept={concept} /></Fixed>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+              {kitBgs.map((b) => (
+                <div key={b.id}>
+                  <Background styleId={b.id} concept={concept} name={name} w={260} h={170} style={{ width: '100%', aspectRatio: '26 / 17', borderRadius: 6, overflow: 'hidden' }} />
+                  <div style={{ fontSize: 11, marginTop: 5, opacity: 0.65 }}>{b[lang]}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gap: 12, alignContent: 'start', justifyItems: 'center' }}>
+            <Fixed w={400} h={400} scale={0.5} style={{ borderRadius: '50%' }}><ProfileDesign kind="primary" styleId={bgId} project={project} concept={concept} /></Fixed>
+            <Fixed w={400} h={400} scale={0.5} style={{ borderRadius: '50%' }}><ProfileDesign kind="pattern" styleId={bgId} project={project} concept={concept} /></Fixed>
+          </div>
+        </div>
+      </Page>
+
+      {/* 8. Print */}
+      <Page {...common} n={8} title={l.contents[5]} bg="#F3F2F5" color={P.dark}>
         <div style={{ position: 'absolute', top: 170, insetInline: 56, display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 30 }}>
           <div style={{ display: 'grid', gap: 18 }}>
             <Fixed w={350} h={200} scale={1.15} style={{ boxShadow: '0 14px 30px rgba(0,0,0,.18)' }}><CardFront project={project} concept={concept} /></Fixed>
@@ -170,7 +195,7 @@ const BrandBook = forwardRef(function BrandBook({ project, concept }, ref) {
         </div>
       </Page>
 
-      {/* 8. Back cover */}
+      {/* 9. Back cover */}
       <Page {...common} bg={P.primary} color={P.light}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 22 }}>
           <Logo name={name} concept={concept} variant="onPrimary" layout="icon" style={{ width: 140, height: 140 }} />

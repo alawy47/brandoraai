@@ -3,9 +3,11 @@
 import { createRng, hashString, uid } from './random';
 import { hslToHex, hexToHsl, clamp, wrapHue, colorName, contrastRatio } from './color';
 import { findCategory, findPersonality, COLOR_FAMILIES, PERSONALITIES } from '../data/options';
-import { TAGLINES, DIRECTIONS, VALUES, VOICE, MARK_RATIONALE, SOCIAL, CARD_PEOPLE } from './copy';
+import { TAGLINES, DIRECTIONS, VALUES, VOICE, MARK_RATIONALE, SOCIAL, SOCIAL_EXTRA, CARD_PEOPLE } from './copy';
 
-export const MARKS = ['monogram-circle', 'monogram-square', 'monogram-split', 'hexagon', 'orbit', 'petals', 'spark', 'pillars', 'wave', 'arch', 'diamond', 'bloom', 'crescent', 'bean', 'shield'];
+export const MARKS = ['monogram-circle', 'monogram-square', 'monogram-split', 'hexagon', 'orbit', 'petals', 'spark', 'pillars', 'wave', 'arch', 'diamond', 'bloom', 'crescent', 'bean', 'shield',
+  'star8', 'crown', 'leaf', 'drop', 'flame', 'mountain', 'sunrise', 'infinity', 'chevrons', 'mosaic', 'halves', 'prism', 'cube', 'lotus', 'bubble', 'seal',
+  'heart', 'bolt', 'anchor', 'compass', 'feather', 'palm', 'knot', 'cup', 'house'];
 export const LAYOUTS = ['horizontal', 'stacked'];
 
 const ARABIC_RE = /[؀-ۿ]/;
@@ -155,13 +157,25 @@ export function generateConcepts(input, seed = Date.now()) {
 export function generateLogoVariants(concept, seed) {
   const rng = createRng(hashString(`${concept.id}|${seed}`));
   const lang = isArabicText(concept.title) ? 'ar' : 'en';
-  const picks = rng.shuffle(MARKS.filter((m) => m !== concept.logo.mark)).slice(0, 6);
+  const picks = rng.shuffle(MARKS.filter((m) => m !== concept.logo.mark)).slice(0, 9);
   return picks.map((mark, i) => ({
     mark,
-    layout: i % 3 === 2 ? 'stacked' : 'horizontal',
+    layout: ['horizontal', 'stacked', 'emblem'][i % 3],
     colorway: i % 2 === 0 ? 'primary' : 'accent',
     rationale: MARK_RATIONALE[mark][lang],
   }));
+}
+
+export function extraSocial(project, concept) {
+  const lang = project.input.language === 'ar' ? 'ar' : 'en';
+  const cat = findCategory(project.input.category);
+  const vars = { name: project.input.name, product: cat.product[lang] };
+  const t = SOCIAL_EXTRA[lang];
+  const f = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Array.isArray(v) ? v.map((x) => fill(x, vars)) : fill(v, vars)]));
+  return {
+    posts: [{ type: 'testimonial', ...f(t.testimonial) }, { type: 'sale', ...f(t.sale) }, { type: 'tips', ...f(t.tips) }],
+    stories: [{ type: 'sale', ...f(t.sale) }],
+  };
 }
 
 export const GENERATION_STEPS = {

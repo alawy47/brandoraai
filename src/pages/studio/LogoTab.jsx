@@ -32,6 +32,7 @@ export default function LogoTab({ project, concept, ci }) {
     { id: 'mono', label: t('studio.mono'), variant: 'mono', layout: 'horizontal', bg: '#FFFFFF' },
     { id: 'wordmark', label: t('studio.wordmark'), variant: 'primary', layout: 'wordmark', bg: P.light },
     { id: 'white', label: t('studio.iconAccent'), variant: 'white', layout: 'icon', bg: P.accent },
+    { id: 'emblem', label: t('studio.emblem'), variant: 'primary', layout: 'emblem', bg: P.light },
   ];
 
   const explore = () => run('explore', async () => setExplorations(await generateLogos(concept, project.input)));
@@ -63,11 +64,11 @@ export default function LogoTab({ project, concept, ci }) {
 
       <section>
         <Heading title={t('studio.variations')} />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {variations.map((v) => (
             <div key={v.id} className="group overflow-hidden rounded-2xl border border-line">
-              <div className="relative flex h-40 items-center justify-center p-6" style={{ background: v.bg }}>
-                <Logo name={name} concept={concept} variant={v.variant} layout={v.layout} className={v.layout === 'icon' ? 'h-20 w-20' : 'h-20 w-full'} />
+              <div className="relative flex h-44 items-center justify-center p-5" style={{ background: v.bg }}>
+                <Logo name={name} concept={concept} variant={v.variant} layout={v.layout} className={v.layout === 'icon' ? 'h-20 w-20' : v.layout === 'emblem' ? 'h-32 w-32' : 'h-20 w-full'} />
               </div>
               <div className="flex items-center justify-between gap-2 bg-surface px-3 py-2.5">
                 <span className="truncate text-sm text-soft">{v.label}</span>
@@ -89,7 +90,7 @@ export default function LogoTab({ project, concept, ci }) {
                 return (
                   <motion.div key={`${logo.mark}-${i}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className="panel overflow-hidden">
                     <div className="flex h-40 items-center justify-center p-6" style={{ background: P.light }}>
-                      <Logo name={name} concept={concept} logo={logo} layout={logo.layout} className="h-20 w-full" />
+                      <Logo name={name} concept={concept} logo={logo} layout={logo.layout} className={logo.layout === 'emblem' ? 'h-32 w-32' : 'h-20 w-full'} />
                     </div>
                     <div className="flex items-center justify-between gap-3 p-3">
                       <p className="line-clamp-2 text-xs leading-relaxed text-mute" dir={dir}>{logo.rationale}</p>

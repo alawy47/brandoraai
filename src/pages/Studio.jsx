@@ -13,9 +13,10 @@ import IdentityTab from './studio/IdentityTab';
 import SocialTab from './studio/SocialTab';
 import MockupsTab from './studio/MockupsTab';
 import ExportTab from './studio/ExportTab';
+import AssetsTab from './studio/AssetsTab';
 
-const TABS = ['concepts', 'logo', 'identity', 'social', 'mockups', 'export'];
-const VIEWS = { concepts: ConceptsTab, logo: LogoTab, identity: IdentityTab, social: SocialTab, mockups: MockupsTab, export: ExportTab };
+const TABS = ['concepts', 'logo', 'identity', 'assets', 'social', 'mockups', 'export'];
+const VIEWS = { concepts: ConceptsTab, logo: LogoTab, identity: IdentityTab, social: SocialTab, mockups: MockupsTab, export: ExportTab, assets: AssetsTab };
 
 export default function Studio() {
   const { id } = useParams();

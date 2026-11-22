@@ -22,7 +22,7 @@ export default function ExportTab({ project, concept }) {
   const name = project.input.name;
 
   const exportPdf = async () => {
-    setPdf({ page: 0, total: 8 });
+    setPdf({ page: 0, total: 9 });
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 400)));
     try {
       const { exportBrandBook } = await import('../../lib/exportPdf');

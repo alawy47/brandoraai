@@ -33,7 +33,7 @@ export default function Navbar() {
   }, []);
 
   const links = landing
-    ? [['#features', t('nav.features')], ['#how', t('nav.how')], ['#showcase', t('nav.showcase')], ['#pricing', t('nav.pricing')]]
+    ? [['#features', t('nav.features')], ['#how', t('nav.how')], ['#showcase', t('nav.showcase')]]
     : [['/dashboard', t('nav.dashboard')], ['/create', t('nav.create')]];
 
   const linkCls = 'rounded-lg px-3 py-2 text-sm text-mute transition-colors hover:text-paper';

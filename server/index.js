@@ -28,7 +28,9 @@ async function requireUser(req, res, next) {
 }
 
 // ---- Output schema (what Claude must return) ---------------------------------
-const MARKS = ['monogram-circle', 'monogram-square', 'monogram-split', 'hexagon', 'orbit', 'petals', 'spark', 'pillars', 'wave', 'arch', 'diamond', 'bloom', 'crescent', 'bean', 'shield'];
+const MARKS = ['monogram-circle', 'monogram-square', 'monogram-split', 'hexagon', 'orbit', 'petals', 'spark', 'pillars', 'wave', 'arch', 'diamond', 'bloom', 'crescent', 'bean', 'shield',
+  'star8', 'crown', 'leaf', 'drop', 'flame', 'mountain', 'sunrise', 'infinity', 'chevrons', 'mosaic', 'halves', 'prism', 'cube', 'lotus', 'bubble', 'seal',
+  'heart', 'bolt', 'anchor', 'compass', 'feather', 'palm', 'knot', 'cup', 'house'];
 const LATIN_HEADINGS = ['Playfair Display', 'Cormorant Garamond', 'Fraunces', 'Space Grotesk', 'Outfit', 'Sora', 'Unbounded', 'Syne', 'Poppins', 'Montserrat'];
 const LATIN_BODY = ['Inter', 'Manrope', 'DM Sans', 'Lora'];
 const ARABIC_HEADINGS = ['Amiri', 'El Messiri', 'Readex Pro', 'Lalezar', 'Reem Kufi', 'Changa', 'Cairo'];
@@ -56,7 +58,7 @@ const Concept = z.object({
     heading: z.enum(LATIN_HEADINGS), body: z.enum(LATIN_BODY),
     headingAr: z.enum(ARABIC_HEADINGS), bodyAr: z.enum(ARABIC_BODY),
   }),
-  logo: z.object({ mark: z.enum(MARKS), layout: z.enum(['horizontal', 'stacked']), rationale: z.string() }),
+  logo: z.object({ mark: z.enum(MARKS), layout: z.enum(['horizontal', 'stacked', 'emblem']), rationale: z.string() }),
   social: z.object({
     posts: z.array(Post).describe('Exactly 3 posts: launch, product, quote'),
     stories: z.object({
@@ -69,7 +71,7 @@ const Concept = z.object({
 const BrandResult = z.object({ concepts: z.array(Concept).describe('Exactly 3 concepts: signature, contrast, expressive') });
 
 const LogoResult = z.object({
-  logos: z.array(z.object({ mark: z.enum(MARKS), layout: z.enum(['horizontal', 'stacked']), colorway: z.enum(['primary', 'accent']), rationale: z.string() })),
+  logos: z.array(z.object({ mark: z.enum(MARKS), layout: z.enum(['horizontal', 'stacked', 'emblem']), colorway: z.enum(['primary', 'accent']), rationale: z.string() })),
 });
 
 // ---- Prompts -------------------------------------------------------------------
@@ -186,9 +188,9 @@ app.post('/api/logos/generate', requireUser, async (req, res) => {
   const { concept, input } = req.body ?? {};
   if (!concept || !input) return res.status(400).json({ error: 'Send the concept and the brief.' });
   try {
-    const text = `${briefText(input)}\n\nCurrent concept: "${concept.title}" with the "${concept.logo?.mark}" mark.\nPropose 6 alternative logo directions using other marks. Write each rationale in the brand language.`;
+    const text = `${briefText(input)}\n\nCurrent concept: "${concept.title}" with the "${concept.logo?.mark}" mark.\nPropose 9 alternative logo directions using other marks. Write each rationale in the brand language.`;
     const out = await askClaude(text, betaZodOutputFormat(LogoResult));
-    res.json({ logos: out.logos.slice(0, 6) });
+    res.json({ logos: out.logos.slice(0, 9) });
   } catch (e) {
     sendError(res, e);
   }

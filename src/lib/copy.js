@@ -134,6 +134,31 @@ export const MARK_RATIONALE = {
   crescent: { en: 'A crescent embracing a star draws on regional night skies: guidance, beauty and a sense of occasion.', ar: 'هلال يحتضن نجمة مستوحى من سماء المنطقة ليلًا: هداية وجمال وإحساس بالمناسبة.' },
   bean: { en: 'A stylised bean with a single flowing line: origin, craft and the ritual of the first cup.', ar: 'حبة مُبسّطة بخط انسيابي واحد: المنشأ والحِرفة وطقس الفنجان الأول.' },
   shield: { en: 'A shield with an inner check conveys protection and a promise kept.', ar: 'درع بعلامة داخلية يعبّر عن الحماية والوعد الذي يُحفظ.' },
+  star8: { en: 'An eight-point star from Islamic geometry: balance, craft and a heritage that feels at home across the region.', ar: 'نجمة ثمانية مستوحاة من الهندسة الإسلامية: توازن وحِرفة وإرث مألوف في المنطقة كلها.' },
+  crown: { en: 'A crown with three jewelled points: leadership, prestige and a promise of the best.', ar: 'تاج بثلاث نقاط مرصّعة: ريادة ومكانة ووعد بالأفضل.' },
+  leaf: { en: 'A single leaf with clear veins: growth, freshness and ingredients you can trust.', ar: 'ورقة واحدة بعروق واضحة: نمو ونضارة ومكونات تثق بها.' },
+  drop: { en: 'A clean drop: purity, care and the essence of the product.', ar: 'قطرة صافية: نقاء وعناية وجوهر المنتج.' },
+  flame: { en: 'A flame with a bright core: passion, energy and warmth.', ar: 'لهب بقلب مضيء: شغف وطاقة ودفء.' },
+  mountain: { en: 'A peak under a rising sun: ambition, endurance and the view from the top.', ar: 'قمة تحت شمس مشرقة: طموح وصمود والإطلالة من الأعلى.' },
+  sunrise: { en: 'A sun on the horizon: a fresh start every day and optimism you can see.', ar: 'شمس على الأفق: بداية جديدة كل يوم وتفاؤل يُرى.' },
+  infinity: { en: 'An unbroken loop: continuity, loyalty and service without limits.', ar: 'حلقة لا تنقطع: استمرارية وولاء وخدمة بلا حدود.' },
+  chevrons: { en: 'Three rising chevrons: progress, speed and a clear direction upward.', ar: 'ثلاثة أسهم متصاعدة: تقدّم وسرعة واتجاه واضح نحو الأعلى.' },
+  mosaic: { en: 'Four tiles in a grid, one in a new color: a system with room for something unexpected.', ar: 'أربع قطع في شبكة واحدة منها بلون مختلف: نظام يترك مساحة للمفاجأة.' },
+  halves: { en: 'Two offset halves form one whole: partnership, dialogue and balance.', ar: 'نصفان متقابلان يكوّنان دائرة واحدة: شراكة وحوار وتوازن.' },
+  prism: { en: 'A two-tone pyramid: structure, clarity and light split into new ideas.', ar: 'هرم بلونين: بنية ووضوح وضوء ينكسر إلى أفكار جديدة.' },
+  cube: { en: 'An isometric cube: building blocks, product thinking and depth.', ar: 'مكعب ثلاثي الأبعاد: لبنات البناء والتفكير في المنتج والعمق.' },
+  lotus: { en: 'A lotus in bloom: calm, renewal and beauty that rises from within.', ar: 'زهرة لوتس متفتحة: سكينة وتجدد وجمال ينبع من الداخل.' },
+  bubble: { en: 'A speech bubble holding the initial: conversation, community and a brand that listens.', ar: 'فقاعة حوار تحتضن الحرف الأول: تواصل ومجتمع وعلامة تُصغي.' },
+  seal: { en: 'A stamped seal around the initial: quality you can certify and a mark of approval.', ar: 'ختم حول الحرف الأول: جودة موثّقة وعلامة اعتماد.' },
+  heart: { en: 'A heart with a soft highlight: care, warmth and a brand people love.', ar: 'قلب بلمسة ضوء ناعمة: عناية ودفء وعلامة يحبها الناس.' },
+  bolt: { en: 'A lightning bolt: speed, energy and instant results.', ar: 'صاعقة برق: سرعة وطاقة ونتائج فورية.' },
+  anchor: { en: 'An anchor: stability, trust and a brand that stays steady in any weather.', ar: 'مرساة: ثبات وثقة وعلامة لا تتزعزع مهما تغيّرت الظروف.' },
+  compass: { en: 'A compass needle pointing north: guidance, expertise and a clear direction.', ar: 'بوصلة تشير إلى الشمال: إرشاد وخبرة واتجاه واضح.' },
+  feather: { en: 'A feather quill: lightness, elegance and the art of writing.', ar: 'ريشة كتابة: خفة وأناقة وفن الكتابة.' },
+  palm: { en: 'A palm tree with dates: generosity, roots in the Gulf and hospitality.', ar: 'نخلة بثمر التمر: كرم وجذور خليجية وضيافة.' },
+  knot: { en: 'Two linked rings: partnership, connection and a bond that holds.', ar: 'حلقتان متشابكتان: شراكة وتواصل ورابط متين.' },
+  cup: { en: 'A steaming cup: the daily ritual, comfort and a warm welcome.', ar: 'فنجان يتصاعد منه البخار: طقس يومي وراحة وترحيب دافئ.' },
+  house: { en: 'A house with an arched door: home, belonging and a place to arrive.', ar: 'بيت بباب مقوّس: الدار والانتماء ومكان للوصول.' },
 };
 
 export const SOCIAL = {
@@ -166,4 +191,18 @@ export const SOCIAL = {
 export const CARD_PEOPLE = {
   en: [{ name: 'Layla Haddad', title: 'Founder & Creative Director' }, { name: 'Omar Nasser', title: 'Managing Partner' }, { name: 'Sara Al‑Mansouri', title: 'Head of Brand' }],
   ar: [{ name: 'ليلى حداد', title: 'المؤسسة والمديرة الإبداعية' }, { name: 'عمر ناصر', title: 'الشريك الإداري' }, { name: 'سارة المنصوري', title: 'مديرة العلامة التجارية' }],
+};
+
+// Extra post templates, built at render time so every project gets them.
+export const SOCIAL_EXTRA = {
+  en: {
+    testimonial: { kicker: 'Customer review', headline: '“Exactly what I was looking for. Now I tell everyone about {name}.”', author: 'Reem A., Dubai', caption: 'Nothing makes our day like a review like this. Thank you, Reem.' },
+    sale: { kicker: 'This weekend only', big: '30%', headline: 'off our {product}', cta: 'Shop the sale', caption: 'Our biggest offer of the season: 30% off our {product}, Friday to Sunday.' },
+    tips: { kicker: 'Good to know', headline: '3 ways to get more from {name}', items: ['Start with our {product}', 'Follow us for early access', 'Bring a friend, save 10%'], caption: 'Three small ways to get more from every visit. Save this for later.' },
+  },
+  ar: {
+    testimonial: { kicker: 'رأي عميل', headline: '«بالضبط ما كنت أبحث عنه. صرت أحدّث الجميع عن {name}.»', author: 'ريم ع.، دبي', caption: 'لا شيء يسعدنا مثل تقييم كهذا. شكرًا يا ريم.' },
+    sale: { kicker: 'نهاية هذا الأسبوع فقط', big: '٣٠٪', headline: 'خصم على {product}', cta: 'تسوّق العروض', caption: 'أكبر عروض الموسم: خصم ٣٠٪ على {product} من الجمعة إلى الأحد.' },
+    tips: { kicker: 'نصيحة', headline: '٣ طرق لتستفيد أكثر من {name}', items: ['ابدأ بـ{product}', 'تابعنا لتصلك العروض أولًا', 'أحضر صديقًا ووفّر ١٠٪'], caption: 'ثلاث طرق بسيطة لتستفيد أكثر في كل زيارة. احفظ المنشور لوقت لاحق.' },
+  },
 };
