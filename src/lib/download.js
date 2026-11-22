@@ -45,13 +45,15 @@ export async function svgToPngDataUrl(svg, targetWidth = 2000, background) {
 }
 
 export async function standaloneLogoSvg(opts) {
-  await ensureFonts(opts.concept, opts.name);
-  const fontCss = await embeddedFontCss(opts.concept, opts.name);
+  const cfg = { ...opts.concept.logo, ...opts.logo };
+  await ensureFonts(opts.concept, opts.name, cfg);
+  const draft = buildLogoSvg(opts);
+  const fontCss = await embeddedFontCss(opts.concept, opts.name, cfg, draft);
   return buildLogoSvg({ ...opts, fontCss });
 }
 
-export async function downloadLogo({ format, name, concept, variant = 'primary', layout, logo, width = 2000, background, filename }) {
-  const svg = await standaloneLogoSvg({ name, concept, variant, layout, logo, background });
+export async function downloadLogo({ format, name, concept, variant = 'primary', layout, logo, width = 2000, background, filename, descriptor }) {
+  const svg = await standaloneLogoSvg({ name, concept, variant, layout, logo, background, descriptor });
   const base = filename || `${slugify(name)}-logo-${layout || concept.logo.layout}-${variant}`;
   if (format === 'svg') {
     downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${base}.svg`);

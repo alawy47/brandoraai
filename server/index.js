@@ -1,138 +1,64 @@
-// BRANDORA API: turns a brand brief into three concepts with Claude.
-// The response matches the shape of src/lib/generator.js, so the frontend
-// renders it with no changes. Start with: ANTHROPIC_API_KEY=... npm start
+// BRANDORA API. Multi-provider AI behind one interface:
+//   text   → Claude, OpenAI or Gemini (brand strategy, logo directions, refinements)
+//   image  → OpenAI or Gemini (symbol explorations)
+//   edit   → OpenAI or Gemini (photo mockups from the real logo, image edits)
+//   vector → Vectorizer.AI or local Potrace (raster → clean SVG)
+//   fonts  → Google Fonts API or the curated library
+// Keys come from environment variables only. Start with: node --env-file=.env index.js
 import express from 'express';
 import cors from 'cors';
-import Anthropic from '@anthropic-ai/sdk';
-import { z } from 'zod';
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { createClient } from '@supabase/supabase-js';
-import { CATEGORIES, PERSONALITIES } from '../src/data/options.js';
+import { ProviderRegistry } from './core/registry.js';
+import { UsageTracker } from './core/usage.js';
+import { JobQueue } from './core/jobs.js';
+import { rateLimit } from './core/rateLimit.js';
+import { anthropicProvider } from './providers/anthropic.js';
+import { openaiProvider } from './providers/openai.js';
+import { geminiProvider } from './providers/gemini.js';
+import { potraceProvider, vectorizerProvider } from './providers/vector.js';
+import { googleFontsProvider } from './providers/fonts.js';
+import { BrandResult, LogoList, LogoPatch, BriefInput } from './lib/schemas.js';
+import { SYSTEM, brandPrompt, directionsPrompt, refinePrompt, mockupPrompt, symbolPrompt } from './lib/prompts.js';
 
-const PORT = process.env.PORT || 8787;
-const MODEL = process.env.CLAUDE_MODEL || 'claude-opus-5-5';
-const client = new Anthropic(); // reads ANTHROPIC_API_KEY
+const env = process.env;
+const list = (v, d) => (v ? v.split(',').map((s) => s.trim()).filter(Boolean) : d);
 
-// Optional auth: when Supabase is configured, every request needs a valid user token.
-const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  : null;
-
+// ---- Auth and persistence (optional, Supabase) -------------------------------------------
+const supabase = env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY ? createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY) : null;
 async function requireUser(req, res, next) {
   if (!supabase) return next();
   const token = req.headers.authorization?.replace(/^Bearer /, '');
   const { data, error } = token ? await supabase.auth.getUser(token) : { data: null, error: true };
-  if (error || !data?.user) return res.status(401).json({ error: 'Sign in to generate brands.' });
+  if (error || !data?.user) return res.status(401).json({ error: 'Sign in to use the studio.' });
   req.user = data.user;
   next();
 }
 
-// ---- Output schema (what Claude must return) ---------------------------------
-const MARKS = ['monogram-circle', 'monogram-square', 'monogram-split', 'hexagon', 'orbit', 'petals', 'spark', 'pillars', 'wave', 'arch', 'diamond', 'bloom', 'crescent', 'bean', 'shield',
-  'star8', 'crown', 'leaf', 'drop', 'flame', 'mountain', 'sunrise', 'infinity', 'chevrons', 'mosaic', 'halves', 'prism', 'cube', 'lotus', 'bubble', 'seal',
-  'heart', 'bolt', 'anchor', 'compass', 'feather', 'palm', 'knot', 'cup', 'house'];
-const LATIN_HEADINGS = ['Playfair Display', 'Cormorant Garamond', 'Fraunces', 'Space Grotesk', 'Outfit', 'Sora', 'Unbounded', 'Syne', 'Poppins', 'Montserrat'];
-const LATIN_BODY = ['Inter', 'Manrope', 'DM Sans', 'Lora'];
-const ARABIC_HEADINGS = ['Amiri', 'El Messiri', 'Readex Pro', 'Lalezar', 'Reem Kufi', 'Changa', 'Cairo'];
-const ARABIC_BODY = ['IBM Plex Sans Arabic', 'Tajawal', 'Almarai', 'Cairo'];
-
-const Bilingual = z.object({ en: z.string(), ar: z.string() });
-const Color = z.object({
-  role: z.enum(['primary', 'secondary', 'accent', 'dark', 'light']),
-  hex: z.string().describe('#RRGGBB uppercase'),
-  name: Bilingual.describe('Evocative color name, e.g. { en: "Midnight Plum", ar: "برقوقي ليلي" }'),
+// ---- Providers ---------------------------------------------------------------------------
+const usage = new UsageTracker({
+  sink: supabase ? (e) => supabase.from('api_usage').insert({ provider: e.provider, task: e.task, model: e.model, ok: e.ok, ms: e.ms, cost_usd: e.costUsd, error: e.error }) : undefined,
 });
-const Post = z.object({
-  type: z.enum(['launch', 'product', 'quote']),
-  kicker: z.string(), headline: z.string(), sub: z.string(), cta: z.string(), caption: z.string(),
-});
-const Concept = z.object({
-  direction: z.enum(['signature', 'contrast', 'expressive']),
-  title: z.string().describe('Two or three word name for this creative direction'),
-  summary: z.string(), tagline: z.string(), story: z.string(), mission: z.string(),
-  values: z.array(z.string()).describe('Exactly 3 one-word values'),
-  voice: z.object({ traits: z.array(z.string()).describe('Exactly 3 adjectives'), sample: z.string() }),
-  match: z.number().int().describe('How closely this concept follows the brief, 80-98'),
-  palette: z.array(Color).describe('Exactly 5 colors, one per role, in order primary, secondary, accent, dark, light'),
-  fonts: z.object({
-    heading: z.enum(LATIN_HEADINGS), body: z.enum(LATIN_BODY),
-    headingAr: z.enum(ARABIC_HEADINGS), bodyAr: z.enum(ARABIC_BODY),
-  }),
-  logo: z.object({ mark: z.enum(MARKS), layout: z.enum(['horizontal', 'stacked', 'emblem']), rationale: z.string() }),
-  social: z.object({
-    posts: z.array(Post).describe('Exactly 3 posts: launch, product, quote'),
-    stories: z.object({
-      arrival: z.object({ kicker: z.string(), headline: z.string(), cta: z.string() }),
-      poll: z.object({ kicker: z.string(), headline: z.string(), a: z.string(), b: z.string() }),
-    }),
-    hashtags: z.array(z.string()).describe('4 hashtags including the # sign'),
-  }),
-});
-const BrandResult = z.object({ concepts: z.array(Concept).describe('Exactly 3 concepts: signature, contrast, expressive') });
-
-const LogoResult = z.object({
-  logos: z.array(z.object({ mark: z.enum(MARKS), layout: z.enum(['horizontal', 'stacked', 'emblem']), colorway: z.enum(['primary', 'accent']), rationale: z.string() })),
-});
-
-// ---- Prompts -------------------------------------------------------------------
-// The system prompt never changes between requests, so it is cached.
-const SYSTEM = `You are the senior brand strategist and identity designer at BRANDORA, a brand studio for founders in the Gulf and worldwide.
-
-From a short brief you produce three distinct, production-ready brand identity concepts:
-1. "signature": the most faithful reading of the brief and the client's preferred colors.
-2. "contrast": a higher-contrast route built on the complement of the base color, made to stand out in feeds and on shelves.
-3. "expressive": the unexpected route, with a triadic palette and a more characterful type pairing.
-
-Write every piece of copy (title, summary, tagline, story, mission, values, voice, logo rationale, social copy, color names' primary language) in the brief's brand language. Arabic copy must read as native Modern Standard Arabic suited to marketing, not a translation. Keep the brand name exactly as given.
-
-Design rules:
-- Palettes: the primary must reach at least 4.5:1 contrast against the light color. The dark color is near-black and the light color is a near-white tint. Respect preferred colors when given; otherwise choose colors that fit the category and audience.
-- Pick fonts only from the allowed lists. Pair a characterful heading face with a quiet body face.
-- Pick the logo mark whose meaning best fits the brand, and explain it in one or two sentences.
-- Taglines are under 6 words. Stories are 3 to 4 sentences. Captions are 1 to 3 sentences. Avoid clichés such as "elevate", "unleash" and "journey".`;
-
-const briefText = (input) => {
-  const cat = CATEGORIES.find((c) => c.id === input.category);
-  const per = PERSONALITIES.find((p) => p.id === input.personality);
-  return [
-    `Brand name: ${input.name}`,
-    `Category: ${cat?.en ?? input.category}`,
-    `Target audience: ${input.audience || 'not specified'}`,
-    `Personality: ${per?.en ?? input.personality} (${per?.desc.en ?? ''})`,
-    `Preferred colors: ${[...(input.colors || []), input.customColor].filter(Boolean).join(', ') || 'none, suggest colors'}`,
-    `Brand language: ${input.language === 'ar' ? 'Arabic' : 'English'}`,
-    input.description ? `Notes from the founder: ${input.description}` : '',
-  ].filter(Boolean).join('\n');
-};
-
-// ---- Claude calls ------------------------------------------------------------
-async function askClaude(userText, format) {
-  const response = await client.beta.messages.parse({
-    model: MODEL,
-    max_tokens: 16000,
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default', // if a safety classifier declines, Anthropic re-runs on its recommended fallback model
-    output_config: { effort: 'medium', format },
-    system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
-    messages: [{ role: 'user', content: userText }],
-  });
-  if (response.stop_reason === 'refusal') {
-    const err = new Error('This brief could not be processed. Change the wording and try again.');
-    err.status = 422;
-    throw err;
-  }
-  if (response.stop_reason === 'max_tokens' || !response.parsed_output) {
-    const err = new Error('The generated brand was incomplete. Try again.');
-    err.status = 502;
-    throw err;
-  }
-  return response.parsed_output;
+export function buildRegistry(overrides = {}) {
+  const providers = {
+    anthropic: anthropicProvider(env), openai: openaiProvider(env), gemini: geminiProvider(env),
+    vectorizer: vectorizerProvider(env), potrace: potraceProvider(), googlefonts: googleFontsProvider(env), ...overrides,
+  };
+  const order = {
+    text: list(env.TEXT_PROVIDERS, ['anthropic', 'openai', 'gemini']),
+    image: list(env.IMAGE_PROVIDERS, ['openai', 'gemini']),
+    edit: list(env.EDIT_PROVIDERS, ['openai', 'gemini']),
+    vector: list(env.VECTOR_PROVIDERS, ['vectorizer', 'potrace']),
+    fonts: ['googlefonts'],
+  };
+  return new ProviderRegistry({ providers, order, usage, retries: Number(env.PROVIDER_RETRIES ?? 2) });
 }
+const registry = buildRegistry();
+const jobs = new JobQueue({ concurrency: Number(env.JOB_CONCURRENCY || 2) });
 
+// ---- Helpers -----------------------------------------------------------------------------
 const HEX = /^#[0-9A-F]{6}$/i;
 const slugify = (s) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '').slice(0, 18) || 'brand';
 let seq = 0;
-
 function finishConcept(c, input) {
   const lang = input.language === 'ar' ? 'ar' : 'en';
   const slug = slugify(input.name);
@@ -140,62 +66,135 @@ function finishConcept(c, input) {
     ...c,
     id: `concept_${Date.now().toString(36)}${(seq++).toString(36)}`,
     palette: c.palette.map((p) => ({ ...p, hex: HEX.test(p.hex) ? p.hex.toUpperCase() : '#777777' })),
+    logo: { ...c.logo, id: `${c.logo.style}-ai-${seq}` },
     social: { posts: c.social.posts, stories: [{ type: 'arrival', ...c.social.stories.arrival }, { type: 'poll', ...c.social.stories.poll }], hashtags: c.social.hashtags },
-    card: {
-      name: lang === 'ar' ? 'ليلى حداد' : 'Layla Haddad',
-      title: lang === 'ar' ? 'المؤسسة' : 'Founder',
-      phone: '+971 50 123 4567', email: `hello@${slug}.com`, web: `${slug}.com`, city: lang === 'ar' ? 'دبي، الإمارات' : 'Dubai, UAE',
-    },
+    card: { name: lang === 'ar' ? 'ليلى حداد' : 'Layla Haddad', title: lang === 'ar' ? 'المؤسسة' : 'Founder', phone: '+971 50 123 4567', email: `hello@${slug}.com`, web: `${slug}.com`, city: lang === 'ar' ? 'دبي، الإمارات' : 'Dubai, UAE' },
   };
 }
+const dataUrl = (img) => `data:${img.mime};base64,${img.b64}`;
+const parseDataUrl = (u) => { const m = /^data:([^;]+);base64,(.+)$/.exec(u || ''); return m ? { mime: m[1], b64: m[2] } : null; };
+const send = (res, e) => {
+  console.error(e.message);
+  const status = e.status && e.status >= 400 && e.status < 600 ? e.status : 500;
+  res.status(status).json({ error: status === 503 ? e.message : status === 422 ? 'This request could not be processed. Change the wording and try again.' : 'The AI providers could not complete this request. Try again.', detail: env.NODE_ENV === 'production' ? undefined : e.message });
+};
 
-function sendError(res, e) {
-  console.error(e);
-  if (e instanceof Anthropic.RateLimitError) return res.status(429).json({ error: 'The studio is busy. Try again in a minute.' });
-  if (e instanceof Anthropic.AuthenticationError) return res.status(500).json({ error: 'The AI service is not configured. Check ANTHROPIC_API_KEY on the server.' });
-  if (e instanceof Anthropic.APIConnectionError) return res.status(503).json({ error: 'The AI service could not be reached. Try again.' });
-  if (e instanceof Anthropic.APIError) return res.status(502).json({ error: 'The AI service returned an error. Try again.' });
-  res.status(e.status && e.status < 600 ? e.status : 500).json({ error: e.message || 'Generation failed.' });
+async function generateBrand(input, progress = () => {}) {
+  progress(0.1);
+  const out = await registry.run('text', { system: SYSTEM, prompt: brandPrompt(input), schema: BrandResult, maxTokens: 24000 }, { cacheable: true });
+  progress(0.9);
+  return { seed: Date.now(), brief: out.data.brief, concepts: out.data.concepts.slice(0, 3).map((c) => finishConcept(c, input)), provider: out.provider };
 }
 
-// ---- HTTP --------------------------------------------------------------------
+// ---- HTTP --------------------------------------------------------------------------------
 const app = express();
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') ?? true }));
-app.use(express.json({ limit: '200kb' }));
+app.set('trust proxy', 1);
+app.use(cors({ origin: env.CORS_ORIGIN?.split(',') ?? true }));
+app.use(express.json({ limit: '12mb' })); // reference images for mockups and vectorisation
+const limiter = rateLimit({ perMinute: Number(env.RATE_LIMIT_PER_MIN || 20), burst: 10 });
 
-const BriefInput = z.object({
-  name: z.string().trim().min(1).max(40),
-  category: z.string(), personality: z.string(),
-  audience: z.string().max(200).optional().default(''),
-  colors: z.array(z.string()).max(3).optional().default([]),
-  customColor: z.string().optional().default(''),
-  language: z.enum(['en', 'ar']),
-  description: z.string().max(1000).optional().default(''),
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
+app.get('/api/providers/status', (_req, res) => res.json({
+  providers: registry.status(),
+  routing: Object.fromEntries(Object.keys(registry.order).map((t) => [t, registry.available(t)])),
+  usage: usage.summary(), recent: usage.recent(15), cache: registry.cache.stats(), jobs: jobs.stats(),
+}));
+
+// Background job: full brand generation (strategy, three concepts, logos, copy).
+app.post('/api/jobs', requireUser, limiter, (req, res) => {
+  const { type, input } = req.body ?? {};
+  if (type !== 'brand') return res.status(400).json({ error: 'Unknown job type.' });
+  const parsed = BriefInput.safeParse(input);
+  if (!parsed.success) return res.status(400).json({ error: 'The brief is missing a name, category or personality.' });
+  const job = jobs.create('brand', ({ progress }) => generateBrand(parsed.data, progress), req.user?.id);
+  res.status(202).json({ jobId: job.id });
+});
+app.get('/api/jobs/:id', requireUser, (req, res) => {
+  const job = jobs.get(req.params.id);
+  if (!job || (job.owner && job.owner !== req.user?.id)) return res.status(404).json({ error: 'Job not found.' });
+  res.json(jobs.public(job));
 });
 
-app.post('/api/brands/generate', requireUser, async (req, res) => {
+// Synchronous version for scripts and simple clients.
+app.post('/api/brands/generate', requireUser, limiter, async (req, res) => {
   const parsed = BriefInput.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'The brief is missing a name, category or personality.' });
-  try {
-    const out = await askClaude(briefText(parsed.data), betaZodOutputFormat(BrandResult));
-    res.json({ seed: Date.now(), concepts: out.concepts.slice(0, 3).map((c) => finishConcept(c, parsed.data)) });
-  } catch (e) {
-    sendError(res, e);
-  }
+  try { res.json(await generateBrand(parsed.data)); } catch (e) { send(res, e); }
 });
 
-app.post('/api/logos/generate', requireUser, async (req, res) => {
-  const { concept, input } = req.body ?? {};
-  if (!concept || !input) return res.status(400).json({ error: 'Send the concept and the brief.' });
+app.post('/api/logos/directions', requireUser, limiter, async (req, res) => {
+  const { input, direction, count = 6 } = req.body ?? {};
+  if (!input?.name || !direction) return res.status(400).json({ error: 'Send the brief and a direction.' });
   try {
-    const text = `${briefText(input)}\n\nCurrent concept: "${concept.title}" with the "${concept.logo?.mark}" mark.\nPropose 9 alternative logo directions using other marks. Write each rationale in the brand language.`;
-    const out = await askClaude(text, betaZodOutputFormat(LogoResult));
-    res.json({ logos: out.logos.slice(0, 9) });
-  } catch (e) {
-    sendError(res, e);
-  }
+    const out = await registry.run('text', { system: SYSTEM, prompt: directionsPrompt(input, direction, Math.min(9, count)), schema: LogoList, maxTokens: 6000, effort: 'low' });
+    res.json({ logos: out.data.logos.map((l, i) => ({ ...l, id: `${l.style}-ai-${Date.now().toString(36)}-${i}` })), provider: out.provider });
+  } catch (e) { send(res, e); }
 });
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, model: MODEL }));
+app.post('/api/logos/refine', requireUser, limiter, async (req, res) => {
+  const { input, logo, request } = req.body ?? {};
+  if (!input?.name || !logo || !request?.trim()) return res.status(400).json({ error: 'Send the brief, the logo and what to change.' });
+  try {
+    const out = await registry.run('text', { system: SYSTEM, prompt: refinePrompt(input, logo, request.slice(0, 500)), schema: LogoPatch, maxTokens: 3000, effort: 'low' });
+    res.json({ ...out.data, provider: out.provider });
+  } catch (e) { send(res, e); }
+});
 
-app.listen(PORT, () => console.log(`BRANDORA API on http://localhost:${PORT}`));
+// Custom symbol: image model draws a flat symbol, then it is vectorised into clean SVG paths.
+app.post('/api/images/symbol', requireUser, limiter, async (req, res) => {
+  const { input, idea, direction } = req.body ?? {};
+  if (!input?.name || !idea) return res.status(400).json({ error: 'Describe the symbol you want.' });
+  try {
+    const img = await registry.run('image', { prompt: symbolPrompt({ input, idea: idea.slice(0, 300), direction }), size: '1024x1024' });
+    const vec = await registry.run('vector', { b64: img.image.b64, mime: img.image.mime }, { cacheable: true });
+    res.json({ preview: dataUrl(img.image), custom: { d: vec.d, viewBox: vec.viewBox }, providers: { image: img.provider, vector: vec.provider } });
+  } catch (e) { send(res, e); }
+});
+
+// Photo mockup: the real logo is sent as a reference image so the model places it, not redraws it.
+app.post('/api/images/mockup', requireUser, limiter, async (req, res) => {
+  const { input, scene, palette, tagline, logoPng } = req.body ?? {};
+  const ref = parseDataUrl(logoPng);
+  if (!input?.name || !ref) return res.status(400).json({ error: 'Send the brief and the logo image.' });
+  try {
+    const out = await registry.run('edit', { prompt: mockupPrompt({ input, scene, palette, tagline }), images: [ref], size: '1536x1024' });
+    res.json({ image: dataUrl(out.image), provider: out.provider });
+  } catch (e) { send(res, e); }
+});
+
+app.post('/api/images/edit', requireUser, limiter, async (req, res) => {
+  const { image, prompt } = req.body ?? {};
+  const ref = parseDataUrl(image);
+  if (!ref || !prompt) return res.status(400).json({ error: 'Send an image and the change you want.' });
+  try {
+    const out = await registry.run('edit', { prompt: prompt.slice(0, 1000), images: [ref] });
+    res.json({ image: dataUrl(out.image), provider: out.provider });
+  } catch (e) { send(res, e); }
+});
+
+app.post('/api/vectorize', requireUser, limiter, async (req, res) => {
+  const ref = parseDataUrl(req.body?.image);
+  if (!ref) return res.status(400).json({ error: 'Send a PNG or JPG as a data URL.' });
+  try {
+    const out = await registry.run('vector', { ...ref, threshold: req.body.threshold }, { cacheable: true });
+    res.json({ svg: out.svg, d: out.d, viewBox: out.viewBox, provider: out.provider });
+  } catch (e) { send(res, e); }
+});
+
+app.get('/api/fonts', async (req, res) => {
+  try {
+    const out = await registry.run('fonts', { category: req.query.category, script: req.query.script }, { cacheable: true });
+    res.json({ fonts: out.fonts, source: out.model });
+  } catch (e) { send(res, e); }
+});
+
+export { app, registry, usage, jobs };
+
+if (process.argv[1]?.endsWith('index.js')) {
+  const PORT = env.PORT || 8787;
+  app.listen(PORT, () => {
+    console.log(`BRANDORA API on http://localhost:${PORT}`);
+    for (const t of ['text', 'image', 'edit', 'vector']) console.log(`  ${t.padEnd(6)} → ${registry.available(t).join(', ') || 'no provider configured'}`);
+  });
+}

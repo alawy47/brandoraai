@@ -113,8 +113,10 @@ export const FONTS = {
   'IBM Plex Sans Arabic': { family: 'IBM Plex Sans Arabic', script: 'arabic', category: 'sans', weight: 600, files: { latin: f32, arabic: f33 } },
 };
 
+import { libraryFallback } from './fontLibrary';
+
 export const fontStack = (family) => {
   const f = FONTS[family];
-  const fallback = f?.category === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif';
+  const fallback = f ? (f.category === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif') : libraryFallback(family);
   return `'${family}', ${fallback}`;
 };

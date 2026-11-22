@@ -11,6 +11,7 @@ import { useToast } from '../components/ui/Toast';
 import { CATEGORIES, PERSONALITIES, COLOR_FAMILIES, AUDIENCE_SUGGESTIONS } from '../data/options';
 import { GENERATION_STEPS } from '../lib/generator';
 import { generateBrand } from '../services/ai';
+import { SampleNotice } from '../components/layout/Workflow';
 
 function Field({ label, hint, error, children, htmlFor }) {
   return (
@@ -89,11 +90,11 @@ export default function Create() {
     setBusy(true);
     try {
       const input = { ...form, name: form.name.trim() };
-      const { seed, concepts } = await generateBrand(input, { onStep: setStep });
+      const { seed, concepts, brief } = await generateBrand(input, { onStep: setStep });
       setStep(7);
       let id = existing?.id;
-      if (existing) updateProject(existing.id, { input, concepts, seed, selected: 0 });
-      else id = createProject(input, concepts, seed);
+      if (existing) updateProject(existing.id, { input, concepts, seed, brief, selected: 0 });
+      else id = createProject(input, concepts, seed, { brief });
       navigate(`/project/${id}`);
     } catch (err) {
       toast(err.message, 'error');
@@ -115,6 +116,7 @@ export default function Create() {
         <h1 className="font-display text-4xl font-semibold tracking-[-0.02em] sm:text-5xl">{t('create.title')}</h1>
         <p className="mt-3 text-lg text-mute">{t('create.sub')}</p>
       </div>
+      <SampleNotice className="mt-6 max-w-3xl" />
 
       <form onSubmit={submit} noValidate className="mt-10 grid gap-8 lg:grid-cols-[1fr_340px]">
         <div className="panel p-5 sm:p-8">

@@ -1,4 +1,5 @@
 import { generateConcepts } from '../lib/generator';
+import { generateCreativeBrief } from '../lib/brief';
 
 const DAY = 86400000;
 const SAMPLES = [
@@ -19,6 +20,7 @@ export function buildSampleProjects(now = Date.now()) {
       input: s.input,
       seed: s.seed,
       concepts: generateConcepts(s.input, s.seed),
+      brief: generateCreativeBrief(s.input),
       selected: s.selected,
       status: s.status,
       favorite: s.favorite,

@@ -5,6 +5,7 @@ import { Languages, Menu, X, Plus } from 'lucide-react';
 import BrandoraLogo from './BrandoraLogo';
 import Button from '../ui/Button';
 import { useI18n } from '../../i18n/I18nContext';
+import Account from './Account';
 
 export function LanguageToggle({ className = '' }) {
   const { lang, toggle, t } = useI18n();
@@ -34,7 +35,7 @@ export default function Navbar() {
 
   const links = landing
     ? [['#features', t('nav.features')], ['#how', t('nav.how')], ['#showcase', t('nav.showcase')]]
-    : [['/dashboard', t('nav.dashboard')], ['/create', t('nav.create')]];
+    : [['/dashboard', t('nav.dashboard')], ['/create', t('nav.create')], ['/settings', t('nav.settings')]];
 
   const linkCls = 'rounded-lg px-3 py-2 text-sm text-mute transition-colors hover:text-paper';
   const renderLink = ([href, label]) => href.startsWith('#')
@@ -48,6 +49,7 @@ export default function Navbar() {
         <nav className="hidden flex-1 items-center gap-1 md:flex">{links.map(renderLink)}</nav>
         <div className="ms-auto hidden items-center gap-2 md:flex">
           <LanguageToggle />
+          <Account />
           {landing && <Button variant="ghost" size="sm" to="/dashboard">{t('nav.dashboard')}</Button>}
           <Button size="sm" to="/create"><Plus className="h-4 w-4" />{t('nav.create')}</Button>
         </div>
@@ -65,6 +67,7 @@ export default function Navbar() {
               {landing && <NavLink to="/dashboard" className="rounded-lg px-3 py-2.5 text-soft hover:bg-white/5">{t('nav.dashboard')}</NavLink>}
               <div className="mt-2 flex items-center justify-between gap-3 border-t border-line pt-4">
                 <LanguageToggle />
+                <Account />
                 <Button size="sm" to="/create"><Plus className="h-4 w-4" />{t('nav.create')}</Button>
               </div>
             </div>

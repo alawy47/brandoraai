@@ -1,7 +1,15 @@
 // Builds every logo as an SVG string. The same function powers on-screen previews,
 // SVG/PNG downloads and the PDF, so what users see is exactly what they export.
 import { FONTS, fontStack } from '../data/fonts';
+import { findLibraryFont, closestWeight, loadLibraryFont, libraryFontFaceCss } from '../data/fontLibrary';
 import { isArabicText, initialOf } from './generator';
+
+/** Up to two initials, one per word (e.g. "Noor Coffee" → "NC"). */
+export function initialsOf(name = '') {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const pick = (w) => (isArabicText(w[0]) ? (w.startsWith('ال') && w.length > 2 ? w[2] : w[0]) : w[0].toUpperCase());
+  return words.slice(0, 2).map(pick).join('') || 'B';
+}
 
 let idCounter = 0;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -14,30 +22,31 @@ export function measureText(text, family, weight, size, letterSpacing = 0) {
   return measureCtx.measureText(text).width + letterSpacing * Math.max(0, [...text].length - 1);
 }
 
-export function wordmarkStyle(concept, name) {
+export function wordmarkStyle(concept, name, cfg = concept.logo || {}) {
   const arabic = isArabicText(name);
-  const family = arabic ? concept.fonts.headingAr : concept.fonts.heading;
-  const meta = FONTS[family] || { weight: 700, category: 'sans' };
-  const upper = !arabic && (meta.category === 'display' || ['Cormorant Garamond', 'Montserrat'].includes(family));
-  return {
-    family,
-    weight: meta.weight,
-    arabic,
-    text: upper ? name.toUpperCase() : name,
-    tracking: arabic ? 0 : upper ? 0.08 : meta.category === 'serif' ? 0.01 : -0.01,
-  };
+  const family = (arabic ? cfg.fontAr : cfg.font) || (arabic ? concept.fonts.headingAr : concept.fonts.heading);
+  const lib = findLibraryFont(family);
+  const meta = FONTS[family];
+  const weight = cfg.weight ? (lib ? closestWeight(family, cfg.weight) : meta?.weight || 700) : lib ? closestWeight(family, 700) : meta?.weight || 700;
+  const cat = meta?.category || lib?.cat || 'sans';
+  const autoUpper = !arabic && (cat === 'display' || ['Cormorant Garamond', 'Montserrat'].includes(family));
+  const kase = arabic ? 'asis' : cfg.case || (autoUpper ? 'upper' : 'asis');
+  const text = kase === 'upper' ? name.toUpperCase() : kase === 'lower' ? name.toLowerCase() : name;
+  const tracking = arabic ? 0 : cfg.tracking ?? (kase === 'upper' ? 0.08 : cat === 'serif' ? 0.01 : -0.01);
+  return { family, weight, arabic, text, tracking, italic: !!cfg.italic && !arabic };
 }
 
 export function logoColors(palette, variant = 'primary', colorway = 'primary') {
   const P = Object.fromEntries(palette.map((c) => [c.role, c.hex]));
   let base = colorway === 'accent' ? P.accent : P.primary;
   let acc = colorway === 'accent' ? P.primary : P.accent;
+  if (colorway === 'ink') { base = P.dark; acc = P.accent; }
   switch (variant) {
-    case 'inverse': return { fill: P.light, inner: P.dark, accent: P.accent, text: P.light };
-    case 'mono': return { fill: '#111114', inner: '#FFFFFF', accent: '#111114', text: '#111114' };
-    case 'white': return { fill: '#FFFFFF', inner: P.primary, accent: '#FFFFFF', text: '#FFFFFF' };
-    case 'onPrimary': return { fill: P.light, inner: P.primary, accent: P.accent, text: P.light };
-    default: return { fill: base, inner: P.light, accent: acc, text: P.dark };
+    case 'inverse': return { fill: P.light, inner: P.dark, accent: P.accent, text: P.light, ink: P.dark };
+    case 'mono': return { fill: '#111114', inner: '#FFFFFF', accent: '#111114', text: '#111114', ink: '#FFFFFF' };
+    case 'white': return { fill: '#FFFFFF', inner: P.primary, accent: '#FFFFFF', text: '#FFFFFF', ink: P.primary };
+    case 'onPrimary': return { fill: P.light, inner: P.primary, accent: P.accent, text: P.light, ink: P.dark };
+    default: return { fill: base, inner: P.light, accent: acc, text: P.dark, ink: P.dark };
   }
 }
 
@@ -48,9 +57,14 @@ function letter(ch, c, family, weight, size = 52, y = 50) {
 
 const STAR = 'M50 2C54 38 62 46 98 50C62 54 54 62 50 98C46 62 38 54 2 50C38 46 46 38 50 2Z';
 
-export function markSvg(mark, c, ch, family, weight) {
+export function markSvg(mark, c, ch, family, weight, custom) {
   const uid = `m${++idCounter}`;
   switch (mark) {
+    case 'custom': {
+      // An AI-drawn symbol, vectorised to one path and fitted into the 100×100 mark box.
+      if (!custom?.d) return `<circle cx="50" cy="50" r="48" fill="${c.fill}"/>`;
+      return `<svg x="2" y="2" width="96" height="96" viewBox="${esc(custom.viewBox)}" preserveAspectRatio="xMidYMid meet"><path d="${esc(custom.d)}" fill="${c.fill}" fill-rule="evenodd"/></svg>`;
+    }
     case 'monogram-circle':
       return `<circle cx="50" cy="50" r="48" fill="${c.fill}"/>${letter(ch, c, family, weight)}<circle cx="80" cy="20" r="6" fill="${c.accent}"/>`;
     case 'monogram-square':
@@ -122,6 +136,29 @@ export function markSvg(mark, c, ch, family, weight) {
       }).join(' ');
       return `<polygon points="${pts}" fill="${c.fill}"/><circle cx="50" cy="50" r="35" fill="none" stroke="${c.inner}" stroke-width="2" stroke-dasharray="2 4"/>${letter(ch, c, family, weight, 40)}<circle cx="50" cy="78" r="3.5" fill="${c.accent}"/>`;
     }
+    case 'initials': {
+      // Lettermark: up to two initials, the second outlined in the frame colour so they interlock.
+      const [a, b] = [...ch];
+      const ar = isArabicText(ch);
+      const t = (x, l, size, stroke) => `<text x="${x}" y="50" dy="${ar ? '0.25em' : '0.36em'}" text-anchor="middle" font-family="${esc(fontStack(family))}" font-weight="${weight}" font-size="${size}" fill="${c.inner}"${stroke ? ` stroke="${c.fill}" stroke-width="3.5" paint-order="stroke"` : ''}>${esc(l)}</text>`;
+      return `<circle cx="50" cy="50" r="48" fill="${c.fill}"/><circle cx="50" cy="50" r="42" fill="none" stroke="${c.accent}" stroke-width="1.5"/>`
+        + (b ? t(ar ? 60 : 39, a, 50) + t(ar ? 40 : 61, b, 50, true) : t(50, a, 56));
+    }
+    case 'mascot-fox':
+      return `<path d="M50 92L13 48V8l23 21q14-5 28 0L87 8v40z" fill="${c.fill}" stroke-linejoin="round"/>`
+        + `<path d="M22 22l11 10-11 6zM78 22L67 32l11 6z" fill="${c.accent}"/>`
+        + `<path d="M50 92L25 60q13 5 25-3 12 8 25 3z" fill="${c.inner}"/>`
+        + `<circle cx="37" cy="49" r="4.5" fill="${c.ink}"/><circle cx="63" cy="49" r="4.5" fill="${c.ink}"/><ellipse cx="50" cy="84" rx="6" ry="4.5" fill="${c.ink}"/>`;
+    case 'mascot-owl':
+      return `<path d="M18 22l14 9h36l14-9v48a32 26 0 0 1-64 0z" fill="${c.fill}" stroke-linejoin="round"/>`
+        + `<circle cx="35" cy="47" r="15" fill="${c.inner}"/><circle cx="65" cy="47" r="15" fill="${c.inner}"/>`
+        + `<circle cx="37" cy="48" r="7" fill="${c.ink}"/><circle cx="63" cy="48" r="7" fill="${c.ink}"/><circle cx="39" cy="46" r="2" fill="${c.inner}"/><circle cx="65" cy="46" r="2" fill="${c.inner}"/>`
+        + `<path d="M44 60h12l-6 10z" fill="${c.accent}"/><path d="M30 80q20 10 40 0" fill="none" stroke="${c.inner}" stroke-width="3" stroke-linecap="round" opacity=".6"/>`;
+    case 'mascot-bear':
+      return `<circle cx="21" cy="24" r="14" fill="${c.fill}"/><circle cx="79" cy="24" r="14" fill="${c.fill}"/><circle cx="21" cy="24" r="6.5" fill="${c.accent}"/><circle cx="79" cy="24" r="6.5" fill="${c.accent}"/>`
+        + `<circle cx="50" cy="55" r="40" fill="${c.fill}"/><ellipse cx="50" cy="70" rx="18" ry="14" fill="${c.inner}"/>`
+        + `<ellipse cx="50" cy="63" rx="7" ry="5" fill="${c.ink}"/><path d="M50 68v6M44 76q6 4 12 0" fill="none" stroke="${c.ink}" stroke-width="2.5" stroke-linecap="round"/>`
+        + `<circle cx="35" cy="47" r="4.5" fill="${c.ink}"/><circle cx="65" cy="47" r="4.5" fill="${c.ink}"/>`;
     case 'heart':
       return `<path d="M50 92C20 72 5 54 5 34a22 22 0 0 1 45-8 22 22 0 0 1 45 8c0 20-15 38-45 58z" fill="${c.fill}"/><path d="M24 30a10 10 0 0 1 10-9" fill="none" stroke="${c.inner}" stroke-width="5" stroke-linecap="round"/><circle cx="82" cy="12" r="6" fill="${c.accent}"/>`;
     case 'bolt':
@@ -151,66 +188,128 @@ export function markSvg(mark, c, ch, family, weight) {
  * @param {object} o
  * @param {string} o.name brand name
  * @param {object} o.concept concept with palette, fonts and logo
- * @param {object} [o.logo] override { mark, layout, colorway }
+ * @param {object} [o.logo] overrides: mark, layout, colorway, style, font, fontAr, weight, case, tracking, accent, italic
  * @param {'primary'|'inverse'|'mono'|'white'|'onPrimary'} [o.variant]
- * @param {'horizontal'|'stacked'|'icon'|'wordmark'|'emblem'} [o.layout]
+ * @param {'horizontal'|'stacked'|'icon'|'wordmark'|'emblem'|'crest'|'badge'|'box'|'corporate'} [o.layout]
+ * @param {string} [o.descriptor] short line used by crest, badge and corporate lockups
  * @param {string} [o.fontCss] embedded @font-face CSS for standalone export
  * @param {string} [o.background] optional background fill
  */
-export function buildLogoSvg({ name, concept, logo, variant = 'primary', layout, fontCss = '', background }) {
+export function buildLogoSvg({ name, concept, logo, variant = 'primary', layout, descriptor = '', fontCss = '', background }) {
   const cfg = { ...concept.logo, ...logo };
   const lay = layout || cfg.layout;
   const c = logoColors(concept.palette, variant, cfg.colorway);
-  const wm = wordmarkStyle(concept, name);
-  const ch = initialOf(name);
-  const markFamily = wm.family;
+  const wm = wordmarkStyle(concept, name, cfg);
+  const ch = cfg.mark === 'initials' ? initialsOf(name) : initialOf(name);
   const pad = 16;
-  const mark = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s / 100})">${markSvg(cfg.mark, c, ch, markFamily, wm.weight)}</g>`;
-  const text = (x, y, size) => `<text x="${x}" y="${y}" text-anchor="middle"${wm.arabic ? ' direction="rtl"' : ''} font-family="${esc(fontStack(wm.family))}" font-weight="${wm.weight}" font-size="${size}" letter-spacing="${(wm.tracking * size).toFixed(2)}" fill="${c.text}">${esc(wm.text)}</text>`;
+  const ff = esc(fontStack(wm.family));
+  const dir = wm.arabic ? ' direction="rtl"' : '';
+  const mark = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s / 100})">${markSvg(cfg.mark, c, ch, wm.family, wm.weight, cfg.custom)}</g>`;
+  const ls = (size, extra = 0) => (wm.tracking * size + extra).toFixed(2);
+  const text = (x, y, size, fill = c.text, anchor = 'middle') => `<text x="${x}" y="${y}" text-anchor="${anchor}"${dir} font-family="${ff}" font-weight="${wm.weight}" font-size="${size}" letter-spacing="${ls(size)}" fill="${fill}">${esc(wm.text)}</text>`;
+  const small = (x, y, str, size, fill, spacing = 0.28) => `<text x="${x}" y="${y}" text-anchor="middle"${isArabicText(str) ? ' direction="rtl"' : ''} font-family="${ff}" font-weight="${Math.min(wm.weight, 600)}" font-size="${size}" letter-spacing="${isArabicText(str) ? 0 : (spacing * size).toFixed(2)}" fill="${fill}">${esc(str)}</text>`;
+  const measure = (size, extra = 0) => measureText(wm.text, wm.family, wm.weight, size, wm.tracking * size + extra);
+  const desc = descriptor ? (wm.arabic || isArabicText(descriptor) ? descriptor : descriptor.toUpperCase()) : '';
+  const arcText = (id, R, cx, cy, str, size, top = true) => {
+    const path = top ? `M${cx - R} ${cy}a${R} ${R} 0 0 1 ${2 * R} 0` : `M${cx - R} ${cy}a${R} ${R} 0 0 0 ${2 * R} 0`;
+    return `<defs><path id="${id}" d="${path}"/></defs><text font-family="${ff}" font-weight="${wm.weight}" font-size="${size.toFixed(1)}" letter-spacing="${isArabicText(str) ? 0 : (size * 0.12).toFixed(2)}" fill="${c.text}"${isArabicText(str) ? ' direction="rtl"' : ''}><textPath href="#${id}" startOffset="50%" text-anchor="middle">${esc(str)}</textPath></text>`;
+  };
 
   let w, h, body;
   if (lay === 'emblem') {
-    // Circular badge: mark in the centre, brand name set on the upper arc.
-    const R = 92, size0 = 22;
-    const tw0 = measureText(wm.text, wm.family, wm.weight, size0, wm.tracking * size0 + 2);
-    const size = Math.min(size0, (size0 * 250) / Math.max(tw0, 1));
-    const id = `arc${++idCounter}`;
+    // Circular emblem: mark in the centre, brand name set on the upper arc.
+    const R = 92, size0 = wm.arabic ? 34 : 22;
+    const size = Math.min(size0, (size0 * 250) / Math.max(measure(size0, 2), 1));
     w = h = 240;
     body = `<circle cx="120" cy="120" r="${R + 20}" fill="none" stroke="${c.fill}" stroke-width="5"/>`
       + `<circle cx="120" cy="120" r="${R - 22}" fill="none" stroke="${c.fill}" stroke-width="1.5"/>`
-      + `<defs><path id="${id}" d="M${120 - R + 4} 120a${R - 4} ${R - 4} 0 0 1 ${2 * (R - 4)} 0"/></defs>`
-      + `<text font-family="${esc(fontStack(wm.family))}" font-weight="${wm.weight}" font-size="${size.toFixed(1)}" letter-spacing="${(wm.tracking * size + 2).toFixed(2)}" fill="${c.text}"${wm.arabic ? ' direction="rtl"' : ''}><textPath href="#${id}" startOffset="50%" text-anchor="middle">${esc(wm.text)}</textPath></text>`
+      + arcText(`arc${++idCounter}`, wm.arabic ? R - 15 : R - 4, 120, 120, wm.text, size)
       + `<circle cx="${120 - R - 1}" cy="132" r="4" fill="${c.accent}"/><circle cx="${120 + R + 1}" cy="132" r="4" fill="${c.accent}"/>`
       + mark(85, 92, 70);
+  } else if (lay === 'badge') {
+    // Vintage badge: double ring, name on the top arc, descriptor or founding year on the bottom arc.
+    const R = 100, cx = 130, cy = 130;
+    const top = wm.text;
+    const bottom = desc || (wm.arabic ? `تأسست ${new Date().getFullYear()}` : `EST. ${new Date().getFullYear()}`);
+    const s0 = wm.arabic ? 40 : 26;
+    const size = Math.min(s0, (s0 * 270) / Math.max(measure(s0, 3), 1));
+    w = h = 260;
+    body = `<circle cx="${cx}" cy="${cy}" r="${R + 24}" fill="${c.fill}"/><circle cx="${cx}" cy="${cy}" r="${R + 18}" fill="none" stroke="${c.inner}" stroke-width="2"/>`
+      + `<circle cx="${cx}" cy="${cy}" r="${R - 22}" fill="${c.inner}"/><circle cx="${cx}" cy="${cy}" r="${R - 27}" fill="none" stroke="${c.fill}" stroke-width="1.5"/>`
+      + arcText(`bt${++idCounter}`, wm.arabic ? R - 17 : R - 6, cx, cy, top, size).replace(`fill="${c.text}"`, `fill="${c.inner}"`)
+      + arcText(`bb${++idCounter}`, R + 9, cx, cy, bottom, isArabicText(bottom) ? 21 : 15, false).replace(`fill="${c.text}"`, `fill="${c.inner}"`)
+      + [-1, 1].map((k) => `<path d="M${cx + k * (R - 2)} ${cy - 7}l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8z" fill="${c.accent}"/>`).join('')
+      + mark(cx - 46, cy - 46, 92);
+  } else if (lay === 'crest') {
+    // Luxury crest: framed mark, widely tracked name, hairline rules with a centre diamond or descriptor.
+    const size = 34 * (wm.arabic ? 1.7 : 1);
+    const tw = measure(size);
+    w = Math.max(tw, 220) + pad * 4; h = 250;
+    const cx = w / 2;
+    const rule = desc
+      ? small(cx, 222 + (wm.arabic ? 4 : 0), desc, wm.arabic ? 17 : 12, c.text, 0.42) + `<path d="M${cx - Math.max(tw / 2, 110)} 218H${cx - desc.length * 4.2 - 16}M${cx + desc.length * 4.2 + 16} 218H${cx + Math.max(tw / 2, 110)}" stroke="${c.accent}" stroke-width="1"/>`
+      : `<path d="M${cx - Math.max(tw / 2, 110)} 216H${cx - 10}M${cx + 10} 216H${cx + Math.max(tw / 2, 110)}" stroke="${c.accent}" stroke-width="1"/><path d="M${cx} 210l6 6-6 6-6-6z" fill="${c.accent}"/>`;
+    body = `<circle cx="${cx}" cy="66" r="52" fill="none" stroke="${c.fill}" stroke-width="1.5"/>` + mark(cx - 38, 28, 76)
+      + text(cx, 172 + size * 0.36, size) + rule;
+  } else if (lay === 'box') {
+    // Streetwear box logo: heavy uppercase knocked out of a solid block, slanted.
+    const size = 70 * (wm.arabic ? 1.1 : 1);
+    const tw = measure(size);
+    const bw = tw + 56, bh = size * 1.32;
+    w = bw + pad * 2 + 20; h = bh + pad * 2;
+    const skew = wm.arabic ? '' : ` transform="translate(${w / 2} ${h / 2}) skewX(-8) translate(${-w / 2} ${-h / 2})"`;
+    body = `<g${skew}><rect x="${pad + 10}" y="${pad}" width="${bw}" height="${bh}" fill="${c.fill}"/>`
+      + text(pad + 10 + bw / 2, pad + bh / 2 + size * 0.35, size, c.inner) + `<rect x="${pad + 10}" y="${pad + bh - 6}" width="${bw}" height="6" fill="${c.accent}"/></g>`;
   } else if (lay === 'icon') {
     w = h = 100 + pad * 2;
     body = mark(pad, pad, 100);
   } else if (lay === 'wordmark') {
     const size = 64 * (wm.arabic ? 1.2 : 1);
-    const tw = measureText(wm.text, wm.family, wm.weight, size, wm.tracking * size);
-    w = tw + pad * 2; h = size * 1.5 + pad * 2;
-    body = text(w / 2, pad + size * 1.02, size);
+    const tw = measure(size);
+    const accent = cfg.accent || '';
+    const dot = accent === 'dot' ? size * 0.17 : 0;
+    w = tw + pad * 2 + (dot ? dot * 2.6 : 0); h = size * 1.5 + pad * 2;
+    const tx = wm.arabic ? pad + dot * 2.6 + tw / 2 : pad + tw / 2;
+    const y = pad + size * 1.02;
+    let t = text(tx, y, size);
+    if (accent === 'lastLetter' && !wm.arabic && wm.text.length > 1) {
+      t = `<text x="${tx}" y="${y}" text-anchor="middle" font-family="${ff}" font-weight="${wm.weight}" font-size="${size}" letter-spacing="${ls(size)}" fill="${c.text}">${esc(wm.text.slice(0, -1))}<tspan fill="${c.accent}">${esc(wm.text.slice(-1))}</tspan></text>`;
+    }
+    body = t;
+    if (dot) body += `<circle cx="${wm.arabic ? pad + dot : pad + tw + dot * 1.6}" cy="${y - dot}" r="${dot}" fill="${c.accent}"/>`;
+    if (accent === 'underline') body += `<path d="M${tx - tw / 2} ${y + size * 0.22}q${tw / 2} ${size * 0.16} ${tw} 0" fill="none" stroke="${c.accent}" stroke-width="${size * 0.07}" stroke-linecap="round"/>`;
   } else if (lay === 'stacked') {
     const size = 42 * (wm.arabic ? 1.2 : 1);
-    const tw = measureText(wm.text, wm.family, wm.weight, size, wm.tracking * size);
+    const tw = measure(size);
     w = Math.max(100, tw) + pad * 2; h = 100 + 22 + size * 1.25 + pad * 2;
     body = mark((w - 100) / 2, pad, 100) + text(w / 2, pad + 100 + 22 + size * 0.9, size);
   } else {
+    // horizontal and corporate (horizontal plus a divider and a descriptor)
     const size = 54 * (wm.arabic ? 1.2 : 1), gap = 26;
-    const tw = measureText(wm.text, wm.family, wm.weight, size, wm.tracking * size);
-    w = 100 + gap + tw + pad * 2; h = 100 + pad * 2;
+    const tw = measure(size);
+    const corp = lay === 'corporate' && desc;
+    const descW = corp ? measureText(desc, wm.family, 500, 14, 14 * 0.28) : 0;
+    const dw = corp ? descW + 42 : 0; // divider block: 20 gap + rule + 20 gap + descriptor
+    w = 100 + gap + tw + pad * 2 + dw; h = 100 + pad * 2;
     const textY = pad + 50 + size * (wm.arabic ? 0.3 : 0.34);
-    body = wm.arabic
-      ? text(pad + tw / 2, textY, size) + mark(pad + tw + gap, pad, 100)
-      : mark(pad, pad, 100) + text(pad + 100 + gap + tw / 2, textY, size);
+    const rule = (x) => `<rect x="${x}" y="${pad + 22}" width="1.5" height="56" fill="${c.text}" opacity=".35"/>`;
+    if (wm.arabic) {
+      // right to left: mark, name, rule, descriptor
+      body = mark(w - pad - 100, pad, 100) + text(w - pad - 100 - gap - tw / 2, textY, size)
+        + (corp ? rule(pad + descW + 20) + small(pad + descW / 2, pad + 55, desc, 14, c.text) : '');
+    } else {
+      body = mark(pad, pad, 100) + text(pad + 100 + gap + tw / 2, textY, size)
+        + (corp ? rule(pad + 100 + gap + tw + 20) + small(pad + 100 + gap + tw + 42 + descW / 2, pad + 55, desc, 14, c.text) : '');
+    }
   }
+  if (wm.italic && lay !== 'box') body = `<g transform="translate(${w / 2} ${h / 2}) skewX(-8) translate(${-w / 2} ${-h / 2})">${body}</g>`;
   w = Math.ceil(w); h = Math.ceil(h);
   const style = fontCss ? `<style>${fontCss}</style>` : '';
   const bg = background ? `<rect width="100%" height="100%" fill="${background}"/>` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(name)} logo">${style}${bg}${body}</svg>`;
 }
 
-// Embeds the exact font file the wordmark uses, so downloaded SVGs render anywhere.
+// Embeds the exact font the logo uses, so downloaded SVGs render anywhere.
 const fontCache = new Map();
 async function toBase64(url) {
   if (fontCache.has(url)) return fontCache.get(url);
@@ -223,24 +322,31 @@ async function toBase64(url) {
   return b64;
 }
 
-export async function embeddedFontCss(concept, name) {
-  const wm = wordmarkStyle(concept, name);
+/** @param {string} [svgText] the logo SVG, used to subset Google Fonts to the characters actually drawn */
+export async function embeddedFontCss(concept, name, cfg = concept.logo, svgText = '') {
+  const wm = wordmarkStyle(concept, name, cfg);
   const meta = FONTS[wm.family];
-  if (!meta) return '';
-  const url = wm.arabic ? meta.files.arabic || meta.files.latin : meta.files.latin || meta.files.arabic;
-  if (!url) return '';
   try {
-    const b64 = await toBase64(url);
-    return `@font-face{font-family:'${wm.family}';font-weight:${meta.weight};src:url(data:font/woff2;base64,${b64}) format('woff2');}`;
-  } catch {
-    return '';
-  }
+    if (meta) {
+      const url = wm.arabic ? meta.files.arabic || meta.files.latin : meta.files.latin || meta.files.arabic;
+      if (!url) return '';
+      return `@font-face{font-family:'${wm.family}';font-weight:${meta.weight};src:url(data:font/woff2;base64,${await toBase64(url)}) format('woff2');}`;
+    }
+    if (findLibraryFont(wm.family)) {
+      const chars = [...svgText.matchAll(/>([^<>]+)</g)].map((m) => m[1]).join('') || wm.text;
+      const weights = [...new Set([wm.weight, Math.min(wm.weight, 600)])];
+      const css = await Promise.all(weights.map((wt) => libraryFontFaceCss(wm.family, wt, [...new Set(chars + wm.text)].join(''))));
+      return css.join('\n');
+    }
+  } catch { /* offline: the SVG falls back to the font stack */ }
+  return '';
 }
 
-export async function ensureFonts(concept, name) {
+export async function ensureFonts(concept, name, cfg = concept.logo) {
   if (typeof document === 'undefined' || !document.fonts) return;
-  const wm = wordmarkStyle(concept, name);
+  const wm = wordmarkStyle(concept, name, cfg);
+  if (findLibraryFont(wm.family)) await loadLibraryFont(wm.family, wm.weight);
   const fams = [wm.family, concept.fonts.heading, concept.fonts.body, concept.fonts.headingAr, concept.fonts.bodyAr];
-  await Promise.all(fams.map((f) => document.fonts.load(`${FONTS[f]?.weight || 400} 40px "${f}"`, wm.arabic ? 'ابجد' : 'Abc').catch(() => {})));
+  await Promise.all(fams.map((f) => document.fonts.load(`${FONTS[f]?.weight || wm.weight || 400} 40px "${f}"`, wm.arabic ? 'ابجد' : 'Abc').catch(() => {})));
   await Promise.all(fams.map((f) => document.fonts.load(`400 16px "${f}"`, 'ابجد Abc').catch(() => {})));
 }

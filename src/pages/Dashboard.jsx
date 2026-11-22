@@ -124,7 +124,7 @@ function ProjectCard({ project, view, onRename, onDelete }) {
 
 export default function Dashboard() {
   const { t } = useI18n();
-  const { projects, updateProject, deleteProject, resetSamples } = useProjects();
+  const { projects, updateProject, deleteProject, resetSamples, cloudEnabled, syncState } = useProjects();
   const toast = useToast();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState('all');
@@ -162,6 +162,7 @@ export default function Dashboard() {
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">{t('dash.title')}</h1>
           <p className="mt-2 text-mute">{t('dash.sub')}</p>
+          {cloudEnabled && <p className={`mt-2 text-xs ${syncState === 'error' ? 'text-danger' : 'text-mute'}`}>{t(`auth.sync_${syncState.replace('-', '_')}`)}</p>}
         </div>
         <Button to="/create"><Plus className="h-4 w-4" />{t('dash.newBrand')}</Button>
       </div>

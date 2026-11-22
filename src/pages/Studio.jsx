@@ -14,6 +14,8 @@ import SocialTab from './studio/SocialTab';
 import MockupsTab from './studio/MockupsTab';
 import ExportTab from './studio/ExportTab';
 import AssetsTab from './studio/AssetsTab';
+import { loadLibraryFont, findLibraryFont } from '../data/fontLibrary';
+import { WorkflowSteps, SampleNotice } from '../components/layout/Workflow';
 
 const TABS = ['concepts', 'logo', 'identity', 'assets', 'social', 'mockups', 'export'];
 const VIEWS = { concepts: ConceptsTab, logo: LogoTab, identity: IdentityTab, social: SocialTab, mockups: MockupsTab, export: ExportTab, assets: AssetsTab };
@@ -30,6 +32,17 @@ export default function Studio() {
 
   useEffect(() => { if (project) setCi(project.selected); }, [project?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { window.scrollTo({ top: 0 }); }, [tab]);
+  useEffect(() => {
+    if (project && !(project.visited || []).includes(tab)) updateProject(project.id, { visited: [...(project.visited || []), tab] });
+  }, [tab, project?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Library fonts picked for this brand load once here, so every tab, export and the PDF can use them.
+  const fontsKey = project ? JSON.stringify([project.concepts[ci]?.fonts, project.concepts[ci]?.logo?.font, project.concepts[ci]?.logo?.fontAr]) : '';
+  useEffect(() => {
+    const c = project?.concepts[ci];
+    if (!c) return;
+    [c.fonts.heading, c.fonts.body, c.fonts.headingAr, c.fonts.bodyAr, c.logo?.font, c.logo?.fontAr].filter((f) => f && findLibraryFont(f))
+      .forEach((f) => { loadLibraryFont(f, 400); loadLibraryFont(f, 700); });
+  }, [fontsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!project) {
     return (
@@ -72,6 +85,11 @@ export default function Studio() {
           )}
           <Button size="sm" onClick={() => setTab('export')}><FileDown className="h-4 w-4" />{t('studio.pdfBtn')}</Button>
         </div>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        <WorkflowSteps project={project} concept={concept} onTab={setTab} />
+        <SampleNotice />
       </div>
 
       {/* Concept switcher + tabs */}

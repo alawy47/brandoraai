@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { cloudEnabled, onAuthChange, loadProjects, saveProjects, removeProjects, signInWithEmail, signOut } from '../services/cloud';
 import { buildSampleProjects } from '../data/sampleProjects';
 import { uid } from '../lib/random';
 
@@ -20,9 +21,48 @@ export function ProjectsProvider({ children }) {
     try { localStorage.setItem(KEY, JSON.stringify(projects)); } catch { /* quota or private mode */ }
   }, [projects]);
 
-  const createProject = useCallback((input, concepts, seed) => {
+  // Cloud sync (Supabase): load on sign-in, then save changed projects and deletions, debounced.
+  const [user, setUser] = useState(null);
+  const [syncState, setSyncState] = useState(cloudEnabled ? 'signed-out' : 'local');
+  const synced = useRef(new Map()); // id -> updatedAt last saved
+  useEffect(() => {
+    let off = () => {};
+    onAuthChange(async (session) => {
+      setUser(session?.user ?? null);
+      if (!session) { setSyncState(cloudEnabled ? 'signed-out' : 'local'); synced.current.clear(); return; }
+      setSyncState('syncing');
+      try {
+        const remote = await loadProjects();
+        const local = load().filter((p) => !p.sample && !remote.some((r) => r.id === p.id));
+        if (local.length) await saveProjects(local, session.user.id); // first sign-in: keep what was made on this device
+        const all = [...local, ...remote].sort((a, b) => b.updatedAt - a.updatedAt);
+        synced.current = new Map(all.map((p) => [p.id, p.updatedAt]));
+        setProjects(all);
+        setSyncState('synced');
+      } catch (e) { console.error(e); setSyncState('error'); }
+    }).then((fn) => { off = fn; });
+    return () => off();
+  }, []);
+  useEffect(() => {
+    if (!user || syncState === 'syncing') return;
+    const timer = setTimeout(async () => {
+      const changed = projects.filter((p) => !p.sample && synced.current.get(p.id) !== p.updatedAt);
+      const removed = [...synced.current.keys()].filter((id) => !projects.some((p) => p.id === id));
+      if (!changed.length && !removed.length) return;
+      try {
+        await saveProjects(changed, user.id);
+        await removeProjects(removed);
+        changed.forEach((p) => synced.current.set(p.id, p.updatedAt));
+        removed.forEach((id) => synced.current.delete(id));
+        setSyncState('synced');
+      } catch (e) { console.error(e); setSyncState('error'); }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [projects, user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const createProject = useCallback((input, concepts, seed, extra = {}) => {
     const now = Date.now();
-    const project = { id: uid('brand'), input, seed, concepts, selected: 0, status: 'progress', favorite: false, createdAt: now, updatedAt: now };
+    const project = { id: uid('brand'), input, seed, concepts, selected: 0, status: 'progress', favorite: false, createdAt: now, updatedAt: now, ...extra };
     setProjects((ps) => [project, ...ps]);
     return project.id;
   }, []);
@@ -56,9 +96,10 @@ export function ProjectsProvider({ children }) {
   }, []);
 
   const value = useMemo(() => ({
+    cloudEnabled, user, syncState, signIn: signInWithEmail, signOut,
     projects, createProject, updateProject, updateConcept, deleteProject, duplicateProject, toggleFavorite, resetSamples,
     getProject: (id) => projects.find((p) => p.id === id),
-  }), [projects, createProject, updateProject, updateConcept, deleteProject, duplicateProject, toggleFavorite, resetSamples]);
+  }), [user, syncState, projects, createProject, updateProject, updateConcept, deleteProject, duplicateProject, toggleFavorite, resetSamples]);
 
   return <ProjectsContext.Provider value={value}>{children}</ProjectsContext.Provider>;
 }

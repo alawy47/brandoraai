@@ -6,7 +6,8 @@ import { withSvgFontProbe } from './download';
 const PAGE_W = 1123, PAGE_H = 794;
 
 // Captures each [data-pdf-page] node and assembles a landscape A4 PDF.
-export async function exportBrandBook(container, { name, onProgress } = {}) {
+/** @returns {Promise<Blob>} the PDF; also saved to disk unless save is false */
+export async function exportBrandBook(container, { name, onProgress, save = true } = {}) {
   await document.fonts?.ready;
   await new Promise((r) => setTimeout(r, 250)); // let images inside SVGs settle
   const pages = [...container.querySelectorAll('[data-pdf-page]')];
@@ -18,5 +19,6 @@ export async function exportBrandBook(container, { name, onProgress } = {}) {
     if (i > 0) pdf.addPage([PAGE_W, PAGE_H], 'landscape');
     pdf.addImage(img, 'JPEG', 0, 0, PAGE_W, PAGE_H, undefined, 'FAST');
   }
-  pdf.save(`${slugify(name)}-brand-guidelines.pdf`);
+  if (save) pdf.save(`${slugify(name)}-brand-guidelines.pdf`);
+  return pdf.output('blob');
 }

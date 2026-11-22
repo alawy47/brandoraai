@@ -7,7 +7,8 @@ import { useProjects } from '../../store/ProjectsContext';
 import { useToast } from '../../components/ui/Toast';
 import { generateBrand } from '../../services/ai';
 import { paletteMap, brandFonts } from '../../lib/brand';
-import { useAsyncAction } from './shared';
+import { useAsyncAction, Heading } from './shared';
+import { generateCreativeBrief } from '../../lib/brief';
 
 export default function ConceptsTab({ project, concept, ci, selectConcept }) {
   const { t } = useI18n();
@@ -19,15 +20,37 @@ export default function ConceptsTab({ project, concept, ci, selectConcept }) {
   const f = brandFonts(concept, lang);
   const P = paletteMap(concept);
 
+  const brief = project.brief || generateCreativeBrief(project.input);
+  const b = (key) => t(`studio.brief.${key}`);
   const regenerate = () => run('regen', async () => {
-    const { seed, concepts } = await generateBrand(project.input);
-    updateProject(project.id, { concepts, seed, selected: 0 });
+    const { seed, concepts, brief: nb } = await generateBrand(project.input);
+    updateProject(project.id, { concepts, seed, selected: 0, brief: nb });
     selectConcept(0);
     toast(t('studio.regenerate'));
   });
 
   return (
     <div className="space-y-14">
+      <section>
+        <Heading title={b('title')} sub={brief.source === 'ai' ? b('subAi') : b('subSample')} />
+        <div dir={dir} className="grid gap-4 lg:grid-cols-3">
+          <div className="panel p-6 lg:col-span-2">
+            <dl className="grid gap-5 sm:grid-cols-2">
+              {[['objective', brief.objective], ['positioning', brief.positioning], ['insight', brief.insight]].map(([key, val]) => (
+                <div key={key} className={key === 'insight' ? 'sm:col-span-2' : ''}><dt className="text-xs text-mute">{b(key)}</dt><dd className="mt-1.5 leading-relaxed text-soft">{val}</dd></div>
+              ))}
+            </dl>
+            <div className="mt-5 flex flex-wrap gap-2 border-t border-line pt-5">{brief.personality.map((p) => <span key={p} className="rounded-full border border-line-2 px-3 py-1 text-sm">{p}</span>)}</div>
+          </div>
+          <div className="panel space-y-5 p-6">
+            {[['cues', brief.cues], ['avoid', brief.avoid]].map(([key, list]) => (
+              <div key={key}><div className="text-xs text-mute">{b(key)}</div>
+                <ul className="mt-2 space-y-1.5 text-sm text-soft">{list.map((x) => <li key={x} className="flex gap-2"><span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${key === 'avoid' ? 'bg-danger/70' : 'bg-lilac'}`} />{x}</li>)}</ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <div>
         <div className="mb-5 flex justify-end">
           <Button variant="outline" size="sm" onClick={regenerate} loading={busy === 'regen'}>{busy !== 'regen' && <RefreshCw className="h-4 w-4" />}{busy === 'regen' ? t('studio.regenerating') : t('studio.regenerate')}</Button>

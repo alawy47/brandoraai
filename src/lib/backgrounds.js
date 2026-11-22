@@ -53,7 +53,7 @@ export function buildBackgroundSvg(styleId, concept, name, w = 1920, h = 1080, {
   const ch = initialOf(name);
   const mark = (x, y, s, variant, extra = '') => {
     const c = logoColors(concept.palette, variant, concept.logo.colorway);
-    return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(s / 100).toFixed(4)})" ${extra}>${markSvg(concept.logo.mark, c, ch, wm.family, wm.weight)}</g>`;
+    return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(s / 100).toFixed(4)})" ${extra}>${markSvg(concept.logo.mark, c, ch, wm.family, wm.weight, concept.logo.custom)}</g>`;
   };
   const id = `bg${++uid}`;
   const m = Math.min(w, h), M = Math.max(w, h);

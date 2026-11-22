@@ -13,7 +13,7 @@ function Svg({ html, style, className }) {
 function MarkOnly({ concept, name, variant, size, style }) {
   const c = logoColors(concept.palette, variant, concept.logo.colorway);
   const wm = wordmarkStyle(concept, name);
-  const html = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${markSvg(concept.logo.mark, c, initialOf(name), wm.family, wm.weight)}</svg>`;
+  const html = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${markSvg(concept.logo.mark, c, initialOf(name), wm.family, wm.weight, concept.logo.custom)}</svg>`;
   return <Svg html={html} style={{ width: size, height: size, ...style }} />;
 }
 
