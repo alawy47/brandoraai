@@ -162,6 +162,10 @@ Without these variables, projects stay in the browser and the API accepts anonym
 | GET | `/api/fonts` | font catalogue |
 | GET | `/api/providers/status` | routing, usage, cache and job stats |
 
+## Templates
+
+The studio has a Templates tab with 24 general designs (social posts, stories, print pieces) and a pack for each of the 15 business categories: coffee, restaurant, fashion, beauty, perfume, jewelry, tech, wellness, fitness, real estate, finance, education, travel, agency and e-commerce. A restaurant gets dish of the day, reservation, delivery and menu designs; a tech brand gets app launch, release notes and metrics; fashion gets lookbook, sale and hang tag. Every template uses the brand's palette, fonts, logo and backgrounds, supports Arabic (RTL) and English, has editable text, and exports as PNG (one by one or as a ZIP). The code is in `src/components/templates`, the packs and starter text in `src/lib/templatePacks.js`.
+
 ## Deployment
 
 ### Everything on Netlify (recommended)

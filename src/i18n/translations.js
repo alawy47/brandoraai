@@ -52,7 +52,7 @@ export const translations = {
       summary: 'Your brief', empty: 'Not set yet',
     },
     studio: {
-      tabs: { concepts: 'Concepts', logo: 'Logo', identity: 'Colors & type', assets: 'Brand kit', social: 'Social', mockups: 'Mockups', export: 'Export' },
+      tabs: { concepts: 'Concepts', logo: 'Logo', identity: 'Colors & type', assets: 'Brand kit', social: 'Social', templates: 'Templates', mockups: 'Mockups', export: 'Export' },
       concept: 'Concept', match: 'brief match', choose: 'Use this concept', chosen: 'Selected concept', regenerate: 'Generate new concepts', regenerating: 'Generating…',
       tagline: 'Tagline', story: 'Brand story', mission: 'Mission', values: 'Values', voice: 'Voice', voiceSample: 'Sounds like',
       rationale: 'Why this mark', primaryLogo: 'Primary logo', variations: 'Logo variations', explorations: 'More logo concepts', explore: 'Generate more logos',
@@ -211,7 +211,7 @@ export const translations = {
       summary: 'ملخص طلبك', empty: 'لم يُحدد بعد',
     },
     studio: {
-      tabs: { concepts: 'المفاهيم', logo: 'الشعار', identity: 'الألوان والخطوط', assets: 'حزمة العلامة', social: 'التواصل', mockups: 'النماذج', export: 'التصدير' },
+      tabs: { concepts: 'المفاهيم', logo: 'الشعار', identity: 'الألوان والخطوط', assets: 'حزمة العلامة', social: 'التواصل', templates: 'القوالب', mockups: 'النماذج', export: 'التصدير' },
       concept: 'المفهوم', match: 'توافق مع الطلب', choose: 'اعتمد هذا المفهوم', chosen: 'المفهوم المعتمد', regenerate: 'ولّد مفاهيم جديدة', regenerating: 'جارٍ التوليد…',
       tagline: 'الشعار النصي', story: 'قصة العلامة', mission: 'الرسالة', values: 'القيم', voice: 'نبرة الصوت', voiceSample: 'مثال',
       rationale: 'لماذا هذا الرمز', primaryLogo: 'الشعار الأساسي', variations: 'نسخ الشعار', explorations: 'شعارات إضافية', explore: 'ولّد شعارات أخرى',

@@ -6,11 +6,11 @@ import { withAlpha } from '../../lib/color';
 import { Background } from '../brand/BrandKit';
 import { defaultBg, overlayVariant, findBg, plateColor } from '../../lib/backgrounds';
 
-function Svg({ html, style, className }) {
+export function Svg({ html, style, className }) {
   return <div className={`[&>svg]:h-full [&>svg]:w-full ${className || ''}`} style={style} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-function MarkOnly({ concept, name, variant, size, style }) {
+export function MarkOnly({ concept, name, variant, size, style }) {
   const c = logoColors(concept.palette, variant, concept.logo.colorway);
   const wm = wordmarkStyle(concept, name);
   const html = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${markSvg(concept.logo.mark, c, initialOf(name), wm.family, wm.weight, concept.logo.custom)}</svg>`;

@@ -11,14 +11,15 @@ import ConceptsTab from './studio/ConceptsTab';
 import LogoTab from './studio/LogoTab';
 import IdentityTab from './studio/IdentityTab';
 import SocialTab from './studio/SocialTab';
+import TemplatesTab from './studio/TemplatesTab';
 import MockupsTab from './studio/MockupsTab';
 import ExportTab from './studio/ExportTab';
 import AssetsTab from './studio/AssetsTab';
 import { loadLibraryFont, findLibraryFont } from '../data/fontLibrary';
 import { WorkflowSteps, SampleNotice } from '../components/layout/Workflow';
 
-const TABS = ['concepts', 'logo', 'identity', 'assets', 'social', 'mockups', 'export'];
-const VIEWS = { concepts: ConceptsTab, logo: LogoTab, identity: IdentityTab, social: SocialTab, mockups: MockupsTab, export: ExportTab, assets: AssetsTab };
+const TABS = ['concepts', 'logo', 'identity', 'assets', 'social', 'templates', 'mockups', 'export'];
+const VIEWS = { concepts: ConceptsTab, logo: LogoTab, identity: IdentityTab, social: SocialTab, templates: TemplatesTab, mockups: MockupsTab, export: ExportTab, assets: AssetsTab };
 
 export default function Studio() {
   const { id } = useParams();
