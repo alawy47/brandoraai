@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, Loader2, Wand2, X, Pipette } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useProjects } from '../store/ProjectsContext';
 import { useToast } from '../components/ui/Toast';
 import { CATEGORIES, PERSONALITIES, COLOR_FAMILIES, AUDIENCE_SUGGESTIONS } from '../data/options';
 import { GENERATION_STEPS } from '../lib/generator';
-import { generateBrand } from '../services/ai';
+import { generateBrand, apiConfigured } from '../services/ai';
 import { SampleNotice } from '../components/layout/Workflow';
 
 function Field({ label, hint, error, children, htmlFor }) {
@@ -24,8 +24,26 @@ function Field({ label, hint, error, children, htmlFor }) {
   );
 }
 
-function GeneratingOverlay({ open, step, lang, t }) {
+// The server reports progress only at the start and the end of an AI call, which can take a minute. So the screen also
+// advances with elapsed time on an easing curve: quick at first, slower later, and never finished until the result arrives.
+function useElapsed(active) {
+  const [sec, setSec] = useState(0);
+  useEffect(() => {
+    if (!active) { setSec(0); return undefined; }
+    const t0 = Date.now();
+    const id = setInterval(() => setSec((Date.now() - t0) / 1000), 400);
+    return () => clearInterval(id);
+  }, [active]);
+  return sec;
+}
+
+function GeneratingOverlay({ open, step: reported, lang, t }) {
   const steps = GENERATION_STEPS[lang];
+  const elapsed = useElapsed(open && apiConfigured);
+  const eased = 1 - Math.exp(-elapsed / 32);
+  const timeStep = Math.min(steps.length - 2, Math.floor((steps.length - 1) * eased));
+  const step = Math.max(reported, timeStep);
+  const fraction = Math.max((step + 1) / steps.length, elapsed ? 0.05 + 0.9 * (1 - Math.exp(-elapsed / 38)) : 0);
   return (
     <AnimatePresence>
       {open && (
@@ -48,8 +66,9 @@ function GeneratingOverlay({ open, step, lang, t }) {
               ))}
             </ol>
             <div className="mt-6 h-1 overflow-hidden rounded-full bg-line">
-              <motion.div className="h-full bg-gradient-to-r from-amethyst-deep to-lilac rtl:bg-gradient-to-l" animate={{ width: `${((step + 1) / steps.length) * 100}%` }} transition={{ ease: 'easeOut' }} />
+              <motion.div className="h-full bg-gradient-to-r from-amethyst-deep to-lilac rtl:bg-gradient-to-l" animate={{ width: `${Math.min(100, fraction * 100)}%` }} transition={{ ease: 'easeOut', duration: 0.5 }} />
             </div>
+            {elapsed > 70 && step < steps.length && <p className="mt-4 text-center text-xs text-mute">{t('create.generatingSlow')}</p>}
           </motion.div>
         </motion.div>
       )}

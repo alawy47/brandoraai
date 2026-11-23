@@ -48,7 +48,7 @@ export const translations = {
       colors: 'Preferred colors', colorsHint: 'Pick up to three, or leave empty and we will suggest colors for your category.', custom: 'Custom color', clearColors: 'Clear',
       language: 'Brand language', languageHint: 'Language for your tagline, story and social copy.',
       description: 'Anything else? (optional)', descriptionPh: 'Products, values, competitors you admire…',
-      generate: 'Generate 3 concepts', generatingTitle: 'Designing your brand', generatingSub: 'This usually takes under a minute.',
+      generate: 'Generate 3 concepts', generatingTitle: 'Designing your brand', generatingSub: 'This usually takes under a minute.', generatingSlow: 'Still working. A detailed brand can take a little longer.',
       summary: 'Your brief', empty: 'Not set yet',
     },
     studio: {
@@ -207,7 +207,7 @@ export const translations = {
       colors: 'الألوان المفضلة', colorsHint: 'اختر حتى ثلاثة ألوان، أو اتركها فارغة وسنقترح ألوانًا تناسب فئتك.', custom: 'لون مخصص', clearColors: 'مسح',
       language: 'لغة العلامة', languageHint: 'لغة الشعار النصي والقصة ومحتوى التواصل.',
       description: 'تفاصيل إضافية (اختياري)', descriptionPh: 'المنتجات، القيم، منافسون تعجبك علاماتهم…',
-      generate: 'ولّد ٣ مفاهيم', generatingTitle: 'نصمم علامتك الآن', generatingSub: 'يستغرق ذلك عادةً أقل من دقيقة.',
+      generate: 'ولّد ٣ مفاهيم', generatingTitle: 'نصمم علامتك الآن', generatingSub: 'يستغرق ذلك عادةً أقل من دقيقة.', generatingSlow: 'ما زلنا نعمل. العلامة المفصّلة تستغرق وقتًا أطول قليلًا.',
       summary: 'ملخص طلبك', empty: 'لم يُحدد بعد',
     },
     studio: {
