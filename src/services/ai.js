@@ -24,22 +24,35 @@ export const getBackend = () => caps;
 export const subscribeBackend = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 const setCaps = (c) => { caps = c; listeners.forEach((f) => f()); };
 
-/** Asks the server which providers are configured. Safe to call again (Settings → Refresh). */
+/**
+ * Asks the server which providers are configured. Retries once with a longer wait, because the first
+ * request after a quiet period can be slow (a cold function, or a VPN or slow connection).
+ */
 export async function probeBackend() {
   if (!apiConfigured) return setCaps({ ...caps, checking: false });
   setCaps({ ...caps, checking: true });
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10000);
-  try {
-    const res = await fetch(`${API}/api/providers/status`, { signal: ctrl.signal });
-    if (!res.ok || !(res.headers.get('content-type') || '').includes('json')) throw new Error(res.ok ? 'No API was found at this address.' : `The API answered ${res.status}.`);
-    const status = await res.json();
-    const r = status.routing || {};
-    setCaps({ checking: false, reachable: true, text: !!r.text?.length, image: !!r.image?.length, edit: !!r.edit?.length, status, error: '' });
-  } catch (e) {
-    setCaps({ checking: false, reachable: false, text: false, image: false, edit: false, status: null, error: e.name === 'AbortError' ? 'The API did not answer in time.' : e.message });
-  } finally { clearTimeout(timer); }
+  let lastError = '';
+  for (const wait_ms of [12000, 30000]) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), wait_ms);
+    try {
+      const res = await fetch(`${API}/api/providers/status`, { signal: ctrl.signal, cache: 'no-store' });
+      if (!res.ok || !(res.headers.get('content-type') || '').includes('json')) throw new Error(res.ok ? 'No API was found at this address.' : `The API answered ${res.status}.`);
+      const status = await res.json();
+      const r = status.routing || {};
+      return setCaps({ checking: false, reachable: true, text: !!r.text?.length, image: !!r.image?.length, edit: !!r.edit?.length, status, error: '' });
+    } catch (e) {
+      lastError = e.name === 'AbortError' ? 'The API did not answer in time. Check your connection (turn off a VPN), then press Refresh.'
+        : e.name === 'TypeError' ? 'Could not connect to the API. Check your connection (turn off a VPN or ad blocker), then press Refresh.' : e.message;
+      if (e.message.startsWith('No API') || e.message.startsWith('The API answered')) break; // retrying will not help
+    } finally { clearTimeout(timer); }
+    await wait(800);
+  }
+  setCaps({ checking: false, reachable: false, text: false, image: false, edit: false, status: null, error: lastError });
 }
+
+// If the first check failed, check again before an AI action so one slow start does not lock the app into sample mode.
+async function ensureProbed() { if (apiConfigured && !caps.reachable && !caps.checking) await probeBackend(); }
 
 /* ---- Requests -------------------------------------------------------------------------- */
 async function post(path, body, token = accessToken()) {
@@ -88,6 +101,7 @@ export { runTask };
 /** Returns { seed, brief, concepts: Concept[3] }. */
 export async function generateBrand(input, { onStep, token } = {}) {
   const seed = Date.now();
+  await ensureProbed();
   if (caps.text) {
     onStep?.(0);
     const data = await runTask('brand', { input }, { onStep, token });
@@ -107,6 +121,7 @@ export async function generateBrand(input, { onStep, token } = {}) {
  * @returns {{ patch: object, applied: string[], source: 'ai' | 'offline', note?: string }}
  */
 export async function refineLogo({ project, logo, request, lang, token }) {
+  await ensureProbed();
   if (caps.text) {
     const data = await runTask('refine', { input: project.input, logo, request }, { token });
     return { patch: data.patch, applied: data.applied || [], note: data.note, source: 'ai' };
@@ -116,6 +131,7 @@ export async function refineLogo({ project, logo, request, lang, token }) {
 
 /** More logos inside one creative direction. */
 export async function generateDirectionLogos({ project, direction, start, token }) {
+  await ensureProbed();
   if (caps.text) return (await runTask('directions', { input: project.input, direction, count: 6 }, { token })).logos;
   await wait(450);
   return generateDirectionVariations(direction, project, start, 6);
@@ -123,6 +139,7 @@ export async function generateDirectionLogos({ project, direction, start, token 
 
 /** A photographic mockup from the image provider. Needs an image-editing provider. */
 export async function generateMockupPhoto({ project, concept, scene, token }) {
+  await ensureProbed();
   if (!caps.edit) throw new Error('Connect an image provider to generate photo mockups.');
   const palette = concept.palette.map((c) => `${c.role} ${c.hex}`).join(', ');
   // The real vector logo is rendered and sent as the reference, so the model places it rather than redrawing it.
@@ -134,6 +151,7 @@ export async function generateMockupPhoto({ project, concept, scene, token }) {
 
 /** AI symbol: the image model draws a flat mark, the server vectorises it into one SVG path. */
 export async function generateCustomSymbol({ project, idea, direction, token }) {
+  await ensureProbed();
   if (!caps.image) throw new Error('Connect an image provider to draw custom symbols.');
   return runTask('symbol', { input: project.input, idea, direction }, { token });
 }
