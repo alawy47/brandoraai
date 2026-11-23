@@ -5,7 +5,7 @@ import { schemaInstruction, parseJson } from './json.js';
 export function geminiProvider(env = process.env) {
   const key = env.GEMINI_API_KEY;
   const base = env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
-  const models = { text: env.GEMINI_TEXT_MODEL || 'gemini-2.5-pro', image: env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image' };
+  const models = { text: env.GEMINI_TEXT_MODEL || 'gemini-3.5-flash', image: env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image' };
   const call = (model, body) => fetchJson(`${base}/models/${model}:generateContent`, {
     provider: 'gemini', method: 'POST', headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   });
