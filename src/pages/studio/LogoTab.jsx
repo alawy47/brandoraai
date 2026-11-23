@@ -8,7 +8,8 @@ import Segmented from '../../components/ui/Segmented';
 import { useI18n } from '../../i18n/I18nContext';
 import { useProjects } from '../../store/ProjectsContext';
 import { useToast } from '../../components/ui/Toast';
-import { refineLogo, generateDirectionLogos, generateCustomSymbol, isLive } from '../../services/ai';
+import { refineLogo, generateDirectionLogos, generateCustomSymbol } from '../../services/ai';
+import { useBackend } from '../../services/useBackend';
 import { Link } from 'react-router-dom';
 import { downloadLogo } from '../../lib/download';
 import { paletteMap } from '../../lib/brand';
@@ -114,6 +115,7 @@ function ConceptCard({ project, concept, logo, selected, favorite, comparing, on
 
 function RefinePanel({ project, concept, logo, onPatch, k, pick, lang }) {
   const toast = useToast();
+  const backend = useBackend();
   const [section, setSection] = useState('symbol');
   const [cat, setCat] = useState(findLibraryFont(logo.font)?.cat || 'all');
   const [request, setRequest] = useState('');
@@ -168,7 +170,7 @@ function RefinePanel({ project, concept, logo, onPatch, k, pick, lang }) {
             </div>
             <div className="mt-4 rounded-xl border border-line bg-ink-2 p-3">
               <span className={label}>{k('aiSymbol')}</span>
-              {isLive ? (
+              {backend.image ? (
                 <div className="flex gap-2">
                   <input className="field !py-2 text-sm" dir="auto" value={idea} onChange={(e) => setIdea(e.target.value)} placeholder={k('aiSymbolPh')} />
                   <Button size="sm" onClick={drawSymbol} loading={symbolBusy} disabled={!idea.trim()}>{!symbolBusy && <Sparkles className="h-4 w-4" />}{k('draw')}</Button>
@@ -249,8 +251,8 @@ function RefinePanel({ project, concept, logo, onPatch, k, pick, lang }) {
             <span className={label}>{k('askHint')}</span>
             <textarea rows={4} className="field resize-none" dir="auto" value={request} onChange={(e) => setRequest(e.target.value)} placeholder={k('askPh')} />
             <div className="flex flex-wrap items-center gap-3">
-              <Button size="sm" onClick={ask} loading={busy} disabled={!request.trim()}>{!busy && <Wand2 className="h-4 w-4" />}{isLive ? k('askAi') : k('askOffline')}</Button>
-              {!isLive && <span className="text-xs text-mute">{k('offlineNote')}</span>}
+              <Button size="sm" onClick={ask} loading={busy} disabled={!request.trim()}>{!busy && <Wand2 className="h-4 w-4" />}{backend.text ? k('askAi') : k('askOffline')}</Button>
+              {!backend.text && <span className="text-xs text-mute">{k('offlineNote')}</span>}
             </div>
             {result && (
               <div className="rounded-xl border border-line bg-ink-2 p-3 text-sm">

@@ -31,8 +31,9 @@ export function openaiProvider(env = process.env) {
         if (!b64) throw new Error('openai: no image in the response');
         return { image: { b64, mime: 'image/png' }, model: models.image, usage: { images: 1 } };
       },
-      async edit({ prompt, images, size = '1024x1024' }) {
+      async edit({ prompt, images, size = '1024x1024', format = 'png' }) {
         const form = new FormData();
+        if (format === 'jpeg') { form.append('output_format', 'jpeg'); form.append('output_compression', '85'); }
         form.append('model', models.image);
         form.append('prompt', prompt);
         form.append('size', size);
@@ -40,7 +41,7 @@ export function openaiProvider(env = process.env) {
         const body = await fetchJson(`${base}/images/edits`, { provider: 'openai', method: 'POST', headers: auth, body: form });
         const b64 = body.data?.[0]?.b64_json;
         if (!b64) throw new Error('openai: no image in the response');
-        return { image: { b64, mime: 'image/png' }, model: models.image, usage: { images: 1 } };
+        return { image: { b64, mime: format === 'jpeg' ? 'image/jpeg' : 'image/png' }, model: models.image, usage: { images: 1 } };
       },
     },
   };

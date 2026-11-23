@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
 import { CheckCircle2, CircleDashed, RefreshCw, Server } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useI18n } from '../i18n/I18nContext';
-import { isLive, apiUrl, providerStatus } from '../services/ai';
+import { apiConfigured, apiUrl, probeBackend } from '../services/ai';
+import { useBackend } from '../services/useBackend';
 
 const TASKS = ['text', 'image', 'edit', 'vector', 'fonts'];
 const ENV = [
+  ['VITE_API_URL', 'build-time, not secret: /'],
   ['ANTHROPIC_API_KEY', 'text'], ['OPENAI_API_KEY', 'text · image · edit'], ['GEMINI_API_KEY', 'text · image · edit'],
   ['VECTORIZER_API_ID / VECTORIZER_API_SECRET', 'vector'], ['GOOGLE_FONTS_API_KEY', 'fonts'],
   ['TEXT_PROVIDERS, IMAGE_PROVIDERS, EDIT_PROVIDERS, VECTOR_PROVIDERS', 'routing order'], ['PRICE_*', 'cost estimates'],
@@ -18,16 +19,12 @@ function Code({ children }) {
 export default function Settings() {
   const { t } = useI18n();
   const k = (key) => t(`settings.${key}`);
-  const [data, setData] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const load = async () => {
-    if (!isLive) return;
-    setLoading(true); setError('');
-    try { setData(await providerStatus()); } catch (e) { setError(e.message); } finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, []);
+  const b = useBackend();
+  const data = b.status;
+  const keysSet = b.text || b.image || b.edit;
+  const tone = b.reachable && keysSet ? 'ok' : b.reachable ? 'warn' : apiConfigured ? 'bad' : 'warn';
+  const title = b.checking ? k('checking') : b.reachable ? (keysSet ? k('connected') : k('noKeysTitle')) : apiConfigured ? k('unreachableTitle') : k('sampleMode');
+  const sub = b.checking ? '' : b.reachable ? (keysSet ? apiUrl : k('noKeysSub')) : apiConfigured ? b.error : k('sampleModeSub');
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-10 sm:px-6">
@@ -36,18 +33,16 @@ export default function Settings() {
           <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">{k('title')}</h1>
           <p className="mt-2 max-w-2xl text-mute">{k('sub')}</p>
         </div>
-        {isLive && <Button variant="outline" size="sm" onClick={load} loading={loading}>{!loading && <RefreshCw className="h-4 w-4" />}{k('refresh')}</Button>}
+        {apiConfigured && <Button variant="outline" size="sm" onClick={probeBackend} loading={b.checking}>{!b.checking && <RefreshCw className="h-4 w-4" />}{k('refresh')}</Button>}
       </div>
 
-      <div className={`mt-8 flex items-center gap-3 rounded-2xl border px-5 py-4 ${isLive ? 'border-success/30 bg-success/[.06]' : 'border-champagne/25 bg-champagne/[.06]'}`}>
-        <Server className={`h-5 w-5 ${isLive ? 'text-success' : 'text-champagne'}`} />
+      <div className={`mt-8 flex items-center gap-3 rounded-2xl border px-5 py-4 ${tone === 'ok' ? 'border-success/30 bg-success/[.06]' : tone === 'bad' ? 'border-danger/30 bg-danger/[.06]' : 'border-champagne/25 bg-champagne/[.06]'}`}>
+        <Server className={`h-5 w-5 ${tone === 'ok' ? 'text-success' : tone === 'bad' ? 'text-danger' : 'text-champagne'}`} />
         <div className="text-sm">
-          <div className="font-medium">{isLive ? k('connected') : k('sampleMode')}</div>
-          <div dir="ltr" className="text-mute rtl:text-end">{isLive ? apiUrl : k('sampleModeSub')}</div>
+          <div className="font-medium">{title}</div>
+          <div dir="auto" className="text-mute">{sub}</div>
         </div>
       </div>
-
-      {error && <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">{k('unreachable')} {error}</p>}
 
       {data && (
         <>
@@ -58,7 +53,7 @@ export default function Settings() {
                 <div key={task} className="panel p-4">
                   <div className="text-xs text-mute">{k(`task_${task}`)}</div>
                   <div className="mt-2 space-y-1 text-sm">
-                    {(data.routing[task] || []).length ? data.routing[task].map((id, i) => <div key={id} className="flex items-center gap-2"><span className="text-xs text-mute">{i + 1}</span>{id}</div>) : <span className="text-danger">{k('none')}</span>}
+                    {(data.routing?.[task] || []).length ? data.routing[task].map((id, i) => <div key={id} className="flex items-center gap-2"><span className="text-xs text-mute">{i + 1}</span>{id}</div>) : <span className="text-danger">{k('none')}</span>}
                   </div>
                 </div>
               ))}
@@ -93,29 +88,20 @@ export default function Settings() {
 
       <section className="mt-12">
         <h2 className="font-display text-2xl font-semibold">{k('setupTitle')}</h2>
-        <ol className="mt-5 space-y-6">
-          <li>
-            <h3 className="font-medium">1. {k('step1')}</h3>
-            <div className="mt-2"><Code>{'cd server\nnpm install\ncp .env.example .env'}</Code></div>
-          </li>
-          <li>
-            <h3 className="font-medium">2. {k('step2')}</h3>
-            <div className="mt-2 overflow-x-auto rounded-xl border border-line">
-              <table className="w-full text-sm"><tbody className="divide-y divide-line">
-                {ENV.map(([name, role]) => <tr key={name}><td dir="ltr" className="px-4 py-2.5 font-mono text-xs text-soft">{name}</td><td className="px-4 py-2.5 text-xs text-mute">{role}</td></tr>)}
-              </tbody></table>
-            </div>
-            <p className="mt-2 text-xs text-mute">{k('step2Note')}</p>
-          </li>
-          <li>
-            <h3 className="font-medium">3. {k('step3')}</h3>
-            <div className="mt-2"><Code>{'node --env-file=.env index.js'}</Code></div>
-          </li>
-          <li>
-            <h3 className="font-medium">4. {k('step4')}</h3>
-            <div className="mt-2"><Code>{'# .env in the project root\nVITE_API_URL=http://localhost:8787'}</Code></div>
-          </li>
+        <h3 className="mt-6 font-medium">{k('netlifyTitle')}</h3>
+        <ol className="mt-3 list-decimal space-y-2 ps-5 text-sm leading-relaxed text-soft">
+          {['n1', 'n2', 'n3', 'n4', 'n5'].map((x) => <li key={x}>{k(x)}</li>)}
         </ol>
+        <div className="mt-4 overflow-x-auto rounded-xl border border-line">
+          <table className="w-full text-sm"><tbody className="divide-y divide-line">
+            {ENV.map(([name, role]) => <tr key={name}><td dir="ltr" className="px-4 py-2.5 font-mono text-xs text-soft">{name}</td><td className="px-4 py-2.5 text-xs text-mute">{role}</td></tr>)}
+          </tbody></table>
+        </div>
+        <p className="mt-2 text-xs text-mute">{k('step2Note')}</p>
+
+        <h3 className="mt-10 font-medium">{k('otherTitle')}</h3>
+        <p className="mt-2 text-sm text-mute">{k('otherSub')}</p>
+        <div className="mt-3"><Code>{'cd server && npm install && cp .env.example .env\nnode --env-file=.env index.js\n\n# project root .env\nVITE_API_URL=http://localhost:8787'}</Code></div>
       </section>
     </div>
   );

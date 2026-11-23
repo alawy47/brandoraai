@@ -123,6 +123,7 @@ export const translations = {
     },
     wf: {
       label: 'Branding workflow', brief: 'Brief', creative: 'Creative brief', directions: 'Directions', logos: 'Logo concepts', select: 'Select', refine: 'Refine', identity: 'Identity', mockups: 'Mockups', export: 'Export',
+      noKeys: 'The AI server is connected but has no provider keys yet, so results still come from the built-in template engine.',
       sample: 'Sample mode: results come from the built-in template engine, not an AI model. Connect AI providers for live strategy, logos and photo mockups.', setup: 'Set up AI providers',
     },
     auth: {
@@ -130,6 +131,11 @@ export const translations = {
       sync_local: '', sync_signed_out: 'Saved on this device. Sign in to sync across devices.', sync_syncing: 'Syncing…', sync_synced: 'Synced to your account', sync_error: 'Sync failed. Your changes are kept on this device; they upload when the connection works again.',
     },
     settings: {
+      checking: 'Checking the API…',
+ noKeysTitle: 'API connected, but no AI keys are set', noKeysSub: 'Add at least one provider key (below) and redeploy. Until then the app uses the sample engine.', unreachableTitle: 'The API could not be reached',
+      netlifyTitle: 'On Netlify (everything on one site)', n1: 'In Netlify open your site, then Site configuration → Environment variables.', n2: 'Add at least one text provider key, for example ANTHROPIC_API_KEY or OPENAI_API_KEY. Tick “Contains secret values”.',
+      n3: 'Add VITE_API_URL with the value / (a single slash). This is not secret, so leave “Contains secret values” unticked.', n4: 'Deploys → Trigger deploy → Clear cache and deploy site.', n5: 'Open this page again and press Refresh. It should say Connected, and list the providers with keys.',
+      otherTitle: 'Another host (Render, Railway, your own server)', otherSub: 'Run the server folder anywhere and set VITE_API_URL to its address. Set CORS_ORIGIN on the server to your site address.',
       title: 'AI providers', sub: 'BRANDORA routes each task to the best configured provider, retries transient failures and falls back to the next provider. Keys live on the server only.',
       refresh: 'Refresh', connected: 'Connected to the BRANDORA API', sampleMode: 'Sample mode: no AI backend connected', sampleModeSub: 'Everything works with the built-in template engine. AI-only features show what they need.',
       unreachable: 'The API could not be reached.', routing: 'Routing', providers: 'Providers and usage', none: 'No provider', cooling: 'Rate limited',
@@ -276,6 +282,7 @@ export const translations = {
     },
     wf: {
       label: 'مسار بناء العلامة', brief: 'الطلب', creative: 'الموجز الإبداعي', directions: 'الاتجاهات', logos: 'مفاهيم الشعار', select: 'الاختيار', refine: 'التحسين', identity: 'الهوية', mockups: 'النماذج', export: 'التصدير',
+      noKeys: 'الخادم متصل لكن لا توجد مفاتيح مزودين بعد، فما زالت النتائج من محرك القوالب المدمج.',
       sample: 'الوضع التجريبي: النتائج من محرك القوالب المدمج وليست من نموذج ذكاء اصطناعي. اربط مزودي الذكاء الاصطناعي للحصول على استراتيجية وشعارات ونماذج واقعية مباشرة.', setup: 'إعداد مزودي الذكاء الاصطناعي',
     },
     auth: {
@@ -283,6 +290,10 @@ export const translations = {
       sync_local: '', sync_signed_out: 'محفوظ على هذا الجهاز. سجّل الدخول للمزامنة بين الأجهزة.', sync_syncing: 'جارٍ المزامنة…', sync_synced: 'تمت المزامنة مع حسابك', sync_error: 'فشلت المزامنة. تبقى تعديلاتك على هذا الجهاز وتُرفع عند عودة الاتصال.',
     },
     settings: {
+      checking: 'جارٍ فحص الخادم…', noKeysTitle: 'الخادم متصل، لكن لا توجد مفاتيح ذكاء اصطناعي', noKeysSub: 'أضف مفتاح مزود واحدًا على الأقل (أدناه) ثم أعد النشر. إلى ذلك الحين يستخدم التطبيق المحرك التجريبي.', unreachableTitle: 'تعذّر الوصول إلى الخادم',
+      netlifyTitle: 'على Netlify (كل شيء في موقع واحد)', n1: 'في Netlify افتح موقعك، ثم Site configuration ← Environment variables.', n2: 'أضف مفتاح مزود نصوص واحدًا على الأقل، مثل ANTHROPIC_API_KEY أو OPENAI_API_KEY، وفعّل خيار “Contains secret values”.',
+      n3: 'أضف VITE_API_URL بالقيمة / (شرطة مائلة واحدة). هذا ليس سريًا، فاترك خيار “Contains secret values” بدون علامة.', n4: 'Deploys ← Trigger deploy ← Clear cache and deploy site.', n5: 'افتح هذه الصفحة مرة أخرى واضغط تحديث. يجب أن تظهر “متصل” مع المزودين الذين لديهم مفاتيح.',
+      otherTitle: 'استضافة أخرى (Render أو Railway أو خادمك)', otherSub: 'شغّل مجلد server في أي مكان واجعل VITE_API_URL عنوانه. واضبط CORS_ORIGIN في الخادم على عنوان موقعك.',
       title: 'مزودو الذكاء الاصطناعي', sub: 'يوجّه براندورا كل مهمة إلى أفضل مزود مُعدّ، ويعيد المحاولة عند الأعطال المؤقتة، وينتقل إلى المزود التالي عند الفشل. المفاتيح على الخادم فقط.',
       refresh: 'تحديث', connected: 'متصل بخادم براندورا', sampleMode: 'الوضع التجريبي: لا يوجد خادم ذكاء اصطناعي متصل', sampleModeSub: 'كل شيء يعمل بمحرك القوالب المدمج، والميزات التي تحتاج ذكاءً اصطناعيًا توضّح ما تحتاجه.',
       unreachable: 'تعذّر الوصول إلى الخادم.', routing: 'توجيه المهام', providers: 'المزودون والاستخدام', none: 'لا يوجد مزود', cooling: 'تجاوز الحد',

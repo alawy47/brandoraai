@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Check, Info } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
-import { isLive } from '../../services/ai';
+import { useBackend } from '../../services/useBackend';
 
 /** The nine workflow steps. Each links to where the work happens and shows whether it is done. */
 export function WorkflowSteps({ project, concept, onTab }) {
@@ -39,11 +39,12 @@ export function WorkflowSteps({ project, concept, onTab }) {
 /** Shown whenever results come from the built-in sample engine instead of an AI model. */
 export function SampleNotice({ className = '' }) {
   const { t } = useI18n();
-  if (isLive) return null;
+  const b = useBackend();
+  if (b.checking || b.text) return null; // checking, or a language model is connected
   return (
     <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-champagne/25 bg-champagne/[.06] px-4 py-2.5 text-xs text-soft sm:text-sm ${className}`}>
       <Info className="hidden h-4 w-4 shrink-0 text-champagne sm:block" />
-      <span className="min-w-0 basis-full sm:basis-auto sm:flex-1">{t('wf.sample')}</span>
+      <span className="min-w-0 basis-full sm:basis-auto sm:flex-1">{b.reachable ? t('wf.noKeys') : t('wf.sample')}</span>
       <Link to="/settings" className="font-medium text-champagne hover:underline">{t('wf.setup')}</Link>
     </div>
   );

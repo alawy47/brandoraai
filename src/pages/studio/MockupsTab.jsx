@@ -3,7 +3,8 @@ import ScaledFrame from '../../components/social/ScaledFrame';
 import { FlipCard, CardFront, CardBack, BoxMockup, BagMockup, ProductMockup, MockupStage, TeeMockup, CapMockup, StorefrontMockup, LetterheadMockup, WebsiteHeaderMockup, InstagramProfileMockup } from '../../components/mockups/Mockups';
 import { Background } from '../../components/brand/BrandKit';
 import { BG_STYLES } from '../../lib/backgrounds';
-import { generateMockupPhoto, isLive } from '../../services/ai';
+import { generateMockupPhoto } from '../../services/ai';
+import { useBackend } from '../../services/useBackend';
 import Button from '../../components/ui/Button';
 import { ImageIcon, Wand2 } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
@@ -20,6 +21,7 @@ export default function MockupsTab({ project, concept }) {
   const pack = findCategory(project.input.category).pack;
   const tee = useRef(null), cap = useRef(null), store = useRef(null), letter = useRef(null), web = useRef(null), ig = useRef(null);
   const k = (key) => t(`studio.mk.${key}`);
+  const backend = useBackend();
   const [scene, setScene] = useState('storefront');
   const [photo, setPhoto] = useState(null);
   const makePhoto = () => run('photo', async () => setPhoto(await generateMockupPhoto({ project, concept, scene })));
@@ -125,12 +127,12 @@ export default function MockupsTab({ project, concept }) {
             </div>
             <div className="mt-4 flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-dashed border-line-2 bg-ink-2">
               {photo ? <img src={photo.image} alt={k(`scene_${scene}`)} className="h-full w-full object-cover" /> : (
-                <div className="max-w-sm p-6 text-center text-sm text-mute"><ImageIcon className="mx-auto mb-3 h-8 w-8 opacity-60" />{isLive ? k('photoReady') : k('photoOffline')}</div>
+                <div className="max-w-sm p-6 text-center text-sm text-mute"><ImageIcon className="mx-auto mb-3 h-8 w-8 opacity-60" />{backend.edit ? k('photoReady') : k('photoOffline')}</div>
               )}
             </div>
             {photo && <p className="mt-2 text-xs text-mute">{k('madeWith')} {photo.provider}</p>}
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              {isLive
+              {backend.edit
                 ? <Button onClick={makePhoto} loading={busy === 'photo'}>{busy !== 'photo' && <Wand2 className="h-4 w-4" />}{k('photoBtn')}</Button>
                 : <Button variant="outline" to="/settings">{k('connect')}</Button>}
             </div>

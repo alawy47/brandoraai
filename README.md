@@ -163,20 +163,39 @@ Without these variables, projects stay in the browser and the API accepts anonym
 
 ## Deployment
 
-- **Frontend:** Vercel, Netlify or Cloudflare Pages. Build `npm run build`, output `dist`. SPA rewrites are included (`vercel.json`, `public/_redirects`).
-- **API:** any Node 20+ host (Render, Railway, Fly.io, Cloud Run). Deploy the repository with `server` as the working directory (it imports shared data from `../src/data`). Set the request timeout to at least 120 seconds; brand generation runs as a background job, so clients poll instead of holding a connection.
-- **Scaling:** jobs, cache and rate limits are in memory, which is correct for one instance. For several instances, back `core/jobs.js`, `core/cache.js` and `core/rateLimit.js` with Redis (for example BullMQ); their interfaces stay the same.
+### Everything on Netlify (recommended)
+
+One Netlify site serves the website and the API. The API runs as Netlify Functions from `netlify/functions`:
+
+- `api` is a fast function at `/api/*`. It checks the user, rate-limits, creates a job and reports status.
+- `run-background` is a background function (15 minute limit). It runs the AI task, because brand generation takes 20 to 60 seconds, longer than a normal function may run.
+- Job state and results live in Netlify Blobs. A random per-job secret means only the `api` function can start work in `run-background`.
+
+Steps:
+
+1. Put the project in a GitHub repository (Netlify must build it; drag-and-drop uploads do not install dependencies or build functions).
+2. Netlify → Add new site → Import an existing project → GitHub. Settings are read from `netlify.toml`.
+3. Site configuration → Environment variables. Add at least one text key (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) and tick "Contains secret values". Optional: `GEMINI_API_KEY`, `VECTORIZER_API_ID`/`VECTORIZER_API_SECRET`, `SUPABASE_*`, `*_MODEL`, `TEXT_PROVIDERS`…
+4. Deploys → Trigger deploy → Clear cache and deploy site.
+5. Open `/settings`. It shows Connected and the providers that have keys. Until a key exists the app says so and uses the sample engine.
+
+`VITE_API_URL=/` is set in `netlify.toml`. It means "the API is on this site" and is not a secret. The app asks `/api/providers/status` at start, so features switch on by what is configured: text keys enable AI briefs, concepts and edits; an image key enables AI symbols; an image-editing key enables photo mockups.
+
+### Frontend on Netlify, API elsewhere
+
+Deploy the frontend as above but set `VITE_API_URL` to the API address (no trailing slash) and `CORS_ORIGIN` on the API to your site address. The `server` folder runs on any Node 20+ host (Render, Railway, Fly.io, Cloud Run); its jobs, cache and rate limit are in memory, so use one instance or back them with Redis.
 
 ## Tests
 
 ```bash
-cd server && npm test
+npm run test:all
 ```
 
-The tests cover fallback, retry with backoff, rate-limit cooldown, caching and in-flight de-duplication, the job queue, OpenAI and Gemini request shapes and response parsing (with `fetch` stubbed), invalid JSON handling, and Potrace on a real logo PNG. `server/test/live-harness.mjs` runs the real API with OpenAI's HTTP stubbed so the frontend's live path can be exercised end to end without keys.
+The tests cover fallback, retry with backoff, rate-limit cooldown, caching and in-flight de-duplication, the job queue, OpenAI and Gemini request shapes and response parsing (with `fetch` stubbed), invalid JSON handling, and Potrace on a real logo PNG. `netlify/test/api.test.js` covers the Netlify job cycle (create, background run, poll), the per-job secret, safe error messages, rate limiting, ownership and URL handling, with an in-memory store. `netlify/test/local-harness.mjs` serves the built site and the same function code in one process with OpenAI stubbed, so the whole live path runs in a browser with no keys. `server/test/live-harness.mjs` does the same for the Express server.
 
 ## Known limits
 
+- The Netlify Functions run in this repository's tests and a Netlify-like harness, and the function bundles build with esbuild, but they have not run on Netlify itself yet. Check `/settings` and one generation after your first deploy.
 - The live provider calls have been tested against stubs, not the real OpenAI, Gemini or Anthropic APIs, and the Supabase sync has not been run against a real project. Run one generation, one image request and one sign-in with real credentials before launch.
 - Default model names change over time; set the `*_MODEL` variables to the models on your accounts.
 - Photo mockups are generated images. Use the vector mockups and logo files for print.

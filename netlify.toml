@@ -1,11 +1,25 @@
-# Netlify: build the frontend and serve it as a single-page app.
+# Netlify: the website plus the AI API as Netlify Functions, all on one site.
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "22"
-  # Set VITE_API_URL here or in Site settings → Environment variables to connect the AI server.
+  # The API lives on this same site. "/" is not a secret.
+  VITE_API_URL = "/"
+
+[functions]
+  node_bundler = "esbuild"
+  # Potrace (local vectorising) loads image code dynamically, so ship it as-is instead of bundling it.
+  external_node_modules = ["potrace"]
+
+# The API goes first; everything else is the single-page app.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
