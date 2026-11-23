@@ -1,7 +1,7 @@
 // The AI tasks, independent of the web framework. Express (server/index.js) and Netlify
 // Functions (netlify/functions) call these with the same inputs and get the same results.
-import { BrandResult, LogoList, LogoPatch, BriefInput } from '../lib/schemas.js';
-import { SYSTEM, brandPrompt, directionsPrompt, refinePrompt, mockupPrompt, symbolPrompt } from '../lib/prompts.js';
+import { BrandResult, LogoList, LogoPatch, BriefInput, IgIdeas, IgInput } from '../lib/schemas.js';
+import { SYSTEM, brandPrompt, directionsPrompt, refinePrompt, mockupPrompt, symbolPrompt, igPrompt } from '../lib/prompts.js';
 
 export class InputError extends Error { constructor(m) { super(m); this.status = 400; } }
 
@@ -73,6 +73,15 @@ export function createHandlers(registry) {
       const out = await registry.run('vector', { ...ref, threshold }, { cacheable: true });
       return { svg: out.svg, d: out.d, viewBox: out.viewBox, provider: out.provider };
     },
+    /** Three post ideas for an Instagram account, from its profile and recent captions (the client sends them; no token reaches this code). */
+    async instagram(payload, progress = () => {}) {
+      const parsed = IgInput.safeParse(payload);
+      if (!parsed.success) throw new InputError('Connect an Instagram account first, then ask for ideas.');
+      progress(0.15);
+      const out = await registry.run('text', { system: SYSTEM, prompt: igPrompt(parsed.data), schema: IgIdeas, maxTokens: 6000, effort: 'medium' });
+      progress(0.95);
+      return { ...out.data, ideas: out.data.ideas.slice(0, 3), provider: out.provider };
+    },
     async fonts({ category, script } = {}) {
       const out = await registry.run('fonts', { category, script }, { cacheable: true });
       return { fonts: out.fonts, source: out.model };
@@ -81,7 +90,7 @@ export function createHandlers(registry) {
 }
 
 /** Job types that run in the background (long AI calls). */
-export const JOB_TYPES = ['brand', 'directions', 'refine', 'symbol', 'mockup', 'edit'];
+export const JOB_TYPES = ['brand', 'directions', 'refine', 'symbol', 'mockup', 'edit', 'instagram'];
 
 /** A message that is safe to show users; provider details stay in the logs. */
 export function publicError(e) {

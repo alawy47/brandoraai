@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:all": "node --test netlify/test/api.test.js && npm --prefix server test"
+    "test:all": "node --test netlify/test/api.test.js netlify/test/instagram.test.js && npm --prefix server test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.12.0",

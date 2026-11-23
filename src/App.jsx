@@ -6,6 +6,7 @@ import Create from './pages/Create';
 import Studio from './pages/Studio';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
+import Instagram from './pages/Instagram';
 import Button from './components/ui/Button';
 import ErrorBoundary from './components/layout/ErrorBoundary';
 import { useI18n } from './i18n/I18nContext';
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/project/:id" element={<Studio />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/instagram" element={<Instagram />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         </ErrorBoundary>

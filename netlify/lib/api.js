@@ -7,6 +7,7 @@ import { buildRegistry } from '../../server/core/setup.js';
 import { verifyUser, authEnabled } from '../../server/core/auth.js';
 import { createHandlers, JOB_TYPES, publicError } from '../../server/core/handlers.js';
 import { UsageTracker } from '../../server/core/usage.js';
+import { handleInstagram } from './instagram.js';
 
 const JOB_TTL_MS = 60 * 60 * 1000;
 const STALE_RUNNING_MS = 16 * 60 * 1000; // background functions are killed at 15 minutes
@@ -71,6 +72,7 @@ export async function handleApi(req, deps) {
   const registry = (deps.makeRegistry || ((sink) => buildRegistry(env, { sink })))();
 
   try {
+    if (path.startsWith('/instagram')) return handleInstagram(req, path, { stores, env, fetch: deps.fetch });
     if (method === 'GET' && path === '/health') return json({ ok: true });
 
     if (method === 'GET' && path === '/providers/status') {
@@ -94,7 +96,7 @@ export async function handleApi(req, deps) {
       if (await rateLimited(stores, client, Number(env.RATE_LIMIT_PER_MIN || 20))) return json({ error: 'Too many requests. Wait a moment and try again.' }, 429);
       const { type, ...payload } = await req.json().catch(() => ({}));
       if (!JOB_TYPES.includes(type)) return json({ error: 'Unknown job type.' }, 400);
-      if (!registry.available(type === 'brand' || type === 'directions' || type === 'refine' ? 'text' : type === 'symbol' ? 'image' : 'edit').length) {
+      if (!registry.available(['brand', 'directions', 'refine', 'instagram'].includes(type) ? 'text' : type === 'symbol' ? 'image' : 'edit').length) {
         return json({ error: 'No AI provider is configured for this task. Add an API key in the site settings.' }, 503);
       }
       const id = `${Date.now().toString(36)}-${randomUUID()}`;

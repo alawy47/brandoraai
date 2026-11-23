@@ -53,3 +53,23 @@ export const BriefInput = z.object({
   audience: z.string().max(200).optional().default(''), colors: z.array(z.string()).max(3).optional().default([]),
   customColor: z.string().optional().default(''), language: z.enum(['en', 'ar']), description: z.string().max(1000).optional().default(''),
 });
+
+// Instagram: ideas for single-image posts, written from an account's public profile and recent captions.
+export const IG_TEMPLATES = ['quote', 'tips', 'sale', 'testimonial', 'launch', 'product'];
+const Visual = z.object({
+  template: z.enum(IG_TEMPLATES).describe('which design to print the text on'),
+  kicker: z.string().describe('short label above the headline, may be empty'), headline: z.string().describe('the main text on the image, under 10 words'),
+  sub: z.string().describe('supporting line, may be empty'), cta: z.string().describe('button text, may be empty'),
+  big: z.string().describe('only for template "sale": the big number or offer, e.g. 30%. Otherwise empty'),
+  items: z.array(z.string()).describe('only for template "tips": exactly 3 short points. Otherwise an empty array'),
+  author: z.string().describe('only for template "testimonial": a first name and city. Otherwise empty'),
+});
+export const IgIdeas = z.object({
+  analysis: z.object({ niche: z.string(), tone: z.string(), audience: z.string(), themes: z.array(z.string()).describe('3 content themes the account uses'), opportunity: z.string().describe('one gap or opportunity the account is not using yet') }),
+  ideas: z.array(z.object({ title: z.string(), why: z.string().describe('why this idea suits this account, one sentence'), hook: z.string(), caption: z.string(), hashtags: z.array(z.string()).describe('5 hashtags with #'), visual: Visual })).describe('exactly 3 ideas'),
+});
+export const IgInput = z.object({
+  profile: z.object({ username: z.string().max(60), name: z.string().max(100).optional().default(''), biography: z.string().max(500).optional().default(''), account_type: z.string().optional().default(''), followers_count: z.number().optional(), media_count: z.number().optional() }),
+  posts: z.array(z.object({ caption: z.string().max(2200).optional().default(''), media_type: z.string().optional().default(''), like_count: z.number().optional(), comments_count: z.number().optional(), timestamp: z.string().optional() })).max(25),
+  brand: z.object({ name: z.string().max(60).optional().default(''), category: z.string().optional().default(''), language: z.enum(['en', 'ar']).default('en') }),
+});

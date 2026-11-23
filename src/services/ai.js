@@ -75,6 +75,14 @@ async function runTask(type, payload, { onStep, token } = {}) {
   return pollJob(jobId, onStep, token);
 }
 
+/** A plain request to the API. Returns { status, data } and does not throw on HTTP errors. */
+export async function apiRequest(path, { method = 'GET', headers = {}, body } = {}) {
+  const res = await fetch(`${API}${path}`, { method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers }, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  return { status: res.status, ok: res.ok, data };
+}
+export { runTask };
+
 /* ---- Tasks ----------------------------------------------------------------------------- */
 
 /** Returns { seed, brief, concepts: Concept[3] }. */
