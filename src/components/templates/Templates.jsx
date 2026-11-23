@@ -35,6 +35,8 @@ const Pill = (c, text, bg, color, size = 15) => text ? <span style={{ display: '
 const Rule = (color, w = 56, h = 3, extra) => <div style={{ width: w, height: h, background: color, borderRadius: 2, ...extra }} />;
 const Bg = (c, id, w, h) => <Background styleId={id} concept={c.concept} name={c.name} w={w} h={h} style={{ position: 'absolute', inset: 0 }} />;
 const Plate = (c, id, style, children) => <div style={{ background: plateColor(id, c.concept.palette), borderRadius: 18, backdropFilter: 'blur(2px)', ...style }}>{children}</div>;
+// Big numbers shrink to fit the width they are given (about 0.66 em per character).
+const fit = (text, base, width, k = 0.66) => Math.max(28, Math.min(base, Math.floor(width / (String(text).length * k))));
 const toneText = (c, id) => (findBg(id).tone === 'light' ? c.P.dark : c.P.light);
 
 // ---- social posts (540 × 540) ----------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ const POSTS = {
     <div style={{ position: 'absolute', width: 380, height: 380, borderRadius: '50%', background: withAlpha(c.P.accent, 0.18), insetInlineEnd: -120, bottom: -150 }} />
     <div style={Label(c, c.P.primary, 16)}>{t.kicker}</div>
     <div style={{ marginTop: 'auto', position: 'relative' }}>
-      <div style={Head(c, 132, { color: c.P.primary, letterSpacing: c.ar ? 0 : '-0.04em' })}>{t.big}</div>
+      <div style={Head(c, fit(t.big, 132, 440, 0.62), { color: c.P.primary, letterSpacing: c.ar ? 0 : '-0.04em' })}>{t.big}</div>
       <div style={Head(c, 36, { marginTop: 6, maxWidth: 380 })}>{t.headline}</div>
       <div style={{ fontSize: 18, opacity: 0.7, marginTop: 12 }}>{t.sub}</div>
       <div style={{ marginTop: 28 }}>{Logo(c, 'primary', 32, 'horizontal', 200)}</div>
@@ -165,7 +167,7 @@ const STORIES = {
     {Logo(c, 'onPrimary', 24, 'horizontal', 150)}
     <div style={{ margin: 'auto 0', position: 'relative' }}>
       <div style={Label(c, c.A1, 12)}>{t.kicker}</div>
-      <div style={Head(c, 150, { letterSpacing: c.ar ? 0 : '-0.05em', lineHeight: 1 })}>{t.big}</div>
+      <div style={Head(c, fit(t.big, 150, 218, 0.7), { letterSpacing: c.ar ? 0 : '-0.05em', lineHeight: 1 })}>{t.big}</div>
       <div style={{ ...Head(c, 30, { fontWeight: 600 }), marginTop: 4 }}>{t.headline}</div>
     </div>
     <div style={{ position: 'relative' }}>{Pill(c, t.cta, c.P.accent, c.P.dark, 12)}</div></>),
@@ -441,7 +443,7 @@ const PACK = {
     <div style={{ height: 270, background: c.P.dark, color: c.P.light, padding: 40, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <MarkOnly concept={c.concept} name={c.name} variant="white" size={300} style={{ position: 'absolute', insetInlineEnd: -70, top: -40, opacity: 0.1 }} />
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>{Logo(c, 'inverse', 30, 'horizontal', 180)}<span style={Label(c, c.P.accent, 12)}>{t.kicker}</span></div>
-      <div style={{ position: 'relative', marginTop: 'auto', ...Head(c, 92, { color: c.P.accent, letterSpacing: c.ar ? 0 : '-0.04em', lineHeight: 0.9 }) }}>{t.big}</div>
+      <div style={{ position: 'relative', marginTop: 'auto', ...Head(c, fit(t.big, 92, 452, 0.72), { color: c.P.accent, letterSpacing: c.ar ? 0 : '-0.04em', lineHeight: 0.95 }) }}>{t.big}</div>
     </div>
     <div style={{ padding: '26px 40px 34px', flex: 1, display: 'flex', flexDirection: 'column' }}>
       <div style={Head(c, 36)}>{t.headline}</div><div style={{ fontSize: 16, opacity: 0.7, marginTop: 8, lineHeight: 1.45 }}>{t.sub}</div>
@@ -451,7 +453,7 @@ const PACK = {
     <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(-45deg, ${withAlpha(c.P.dark, 0.06)} 0 18px, transparent 18px 36px)` }} />
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>{Logo(c, 'primary', 34, 'horizontal', 200)}<span style={{ ...Label(c, c.P.light, 12), background: c.P.dark, borderRadius: 99, padding: '7px 14px' }}>{t.kicker}</span></div>
     <div style={{ position: 'relative', marginTop: 'auto' }}>
-      <div style={Head(c, 190, { letterSpacing: c.ar ? 0 : '-0.05em', lineHeight: 0.85, color: c.P.dark })}>{t.big}</div>
+      <div style={Head(c, fit(t.big, 190, 448, 0.72), { letterSpacing: c.ar ? 0 : '-0.05em', lineHeight: 0.9, color: c.P.dark })}>{t.big}</div>
       <div style={Head(c, 46, { marginTop: 14 })}>{t.headline}</div>
       <div style={{ fontSize: 18, opacity: 0.8, marginTop: 10 }}>{t.sub}</div>
       <div style={{ marginTop: 22 }}>{Pill(c, t.cta, c.P.dark, c.P.light, 16)}</div>
@@ -466,6 +468,148 @@ const PACK = {
       <div style={{ fontSize: 16, opacity: 0.65, margin: '8px 0 16px' }}>{t.sub}</div>
       <div style={{ ...Label(c, c.P.dark, 12), borderTop: `1px solid ${c.P.dark}`, display: 'inline-block', paddingTop: 10 }}>{t.cta}</div>
     </div></>),
+};
+
+// ---- category stories (270 × 480) --------------------------------------------------------------------------------
+const skyline = (c, w, h) => [[24, 0.62, 56], [86, 0.45, 70], [160, 0.74, 48], [214, 0.38, 60], [w - 70, 0.55, 54]].map(([x, k, bw], i) => (
+  <div key={i} style={{ position: 'absolute', bottom: 0, left: x, width: bw, height: h * k, background: i % 2 ? c.P.primary : c.P.dark, borderRadius: '5px 5px 0 0' }}>
+    {[0, 1, 2, 3, 4].map((r) => <div key={r} style={{ position: 'absolute', top: 12 + r * 20, left: 9, right: 9, height: 7, background: withAlpha(c.P.light, 0.22), borderRadius: 2 }} />)}
+  </div>));
+const Foot = (c, color) => <div dir="ltr" style={{ fontSize: 10.5, opacity: 0.6, textAlign: 'center', color }}>{c.handle}</div>;
+const top = (c, variant, label, color) => <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>{Logo(c, variant, 22, 'horizontal', 130)}<span style={Label(c, color, 9.5)}>{label}</span></div>;
+
+const PACK_STORIES = {
+  dishstory: (c, t) => Box(c, { background: c.P.dark, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'inverse', t.kicker, c.P.accent)}
+    <div style={{ position: 'relative', margin: '22px auto 0', width: 214, height: 214, borderRadius: '50%', background: c.P.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', inset: 18, borderRadius: '50%', border: `2px dashed ${withAlpha(c.P.dark, 0.4)}` }} />
+      <MarkOnly concept={c.concept} name={c.name} variant="primary" size={96} />
+      <div style={{ position: 'absolute', insetInlineEnd: -8, bottom: 0, width: 68, height: 68, borderRadius: '50%', background: c.P.accent, color: c.P.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: c.f.heading, fontWeight: 800, fontSize: 24, transform: 'rotate(8deg)' }}>{t.big}</div>
+    </div>
+    <div style={{ marginTop: 'auto', textAlign: 'center' }}>
+      <div style={Head(c, 34)}>{t.headline}</div>
+      <div style={{ fontSize: 13, opacity: 0.78, margin: '10px 8px 16px', lineHeight: 1.45 }}>{t.sub}</div>
+      {Pill(c, t.cta, c.P.accent, c.P.dark, 12)}
+    </div></>),
+  reservestory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'primary', t.kicker, c.P.primary)}
+    <div style={Head(c, 30, { marginTop: 24 })}>{t.headline}</div>
+    <div style={{ fontSize: 12.5, opacity: 0.65, marginTop: 6 }}>{t.sub}</div>
+    <div style={{ margin: 'auto 0', background: '#fff', border: `1px solid ${withAlpha(c.P.dark, 0.12)}`, borderRadius: 18, padding: '6px 18px' }}>
+      {rowsOf(t, 4).map(([a, b], i) => <div key={i} style={{ padding: '9px 0', borderTop: i ? `1px dashed ${withAlpha(c.P.dark, 0.2)}` : 'none' }}><div style={Label(c, c.P.primary, 9)}>{a}</div><div style={{ fontFamily: c.f.heading, fontSize: 17, fontWeight: 700, marginTop: 2, whiteSpace: 'nowrap' }}>{b}</div></div>)}
+    </div>
+    <div style={{ textAlign: 'center', marginBottom: 4 }}>{Pill(c, t.cta, c.P.dark, c.P.light, 13)}</div></>),
+  hoursstory: (c, t) => Box(c, { background: c.P.primary, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    <MarkOnly concept={c.concept} name={c.name} variant="white" size={300} style={{ position: 'absolute', insetInlineEnd: -100, bottom: -60, opacity: 0.08 }} />
+    {top(c, 'onPrimary', t.kicker, c.A1)}
+    <div style={{ ...Head(c, 38), marginTop: 48, position: 'relative' }}>{t.headline}</div>
+    <div style={{ margin: 'auto 0', position: 'relative' }}>
+      {rowsOf(t, 4).map(([a, b], i) => <div key={i} style={{ padding: '14px 0', borderTop: `1px solid ${withAlpha(c.P.light, 0.22)}` }}><div style={{ fontSize: 13, opacity: 0.8 }}>{a}</div><div style={{ fontFamily: c.f.heading, fontSize: 22, fontWeight: 700, marginTop: 2 }}>{b}</div></div>)}
+    </div>
+    <div style={{ position: 'relative', fontSize: 12, opacity: 0.8, textAlign: 'center' }}>{t.sub}</div></>),
+  lookstory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, padding: 22, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }, <>
+    <div style={{ position: 'absolute', inset: 12, border: `1px solid ${withAlpha(c.P.dark, 0.3)}` }} />
+    <div style={{ position: 'relative', alignSelf: 'stretch', padding: '6px 8px' }}>{top(c, 'primary', t.kicker, c.P.primary)}</div>
+    <div style={{ position: 'relative', marginTop: 18, width: 210, height: 250, borderRadius: '105px 105px 0 0', background: c.P.secondary, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}><MarkOnly concept={c.concept} name={c.name} variant="primary" size={160} style={{ marginBottom: 24 }} /></div>
+    <div style={{ position: 'relative', marginTop: 'auto', paddingBottom: 14 }}>
+      <div style={Head(c, 40, { fontWeight: 500 })}>{t.headline}</div>
+      <div style={{ fontSize: 13, opacity: 0.65, margin: '8px 0 14px' }}>{t.sub}</div>
+      <div style={{ ...Label(c, c.P.dark, 10.5), borderTop: `1px solid ${c.P.dark}`, display: 'inline-block', paddingTop: 8 }}>{t.cta}</div>
+    </div></>),
+  salestory: (c, t) => Box(c, { background: c.P.accent, color: c.P.dark, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(-45deg, ${withAlpha(c.P.dark, 0.06)} 0 16px, transparent 16px 32px)` }} />
+    {top(c, 'primary', '', c.P.dark)}
+    <div style={{ position: 'relative', alignSelf: 'flex-start', marginTop: 16, ...Label(c, c.P.light, 10), background: c.P.dark, borderRadius: 99, padding: '6px 12px' }}>{t.kicker}</div>
+    <div style={{ position: 'relative', margin: 'auto 0' }}>
+      <div style={Head(c, fit(t.big, 128, 222, 0.72), { letterSpacing: c.ar ? 0 : '-0.05em', lineHeight: 0.9 })}>{t.big}</div>
+      <div style={Head(c, 32, { marginTop: 14 })}>{t.headline}</div>
+      <div style={{ fontSize: 13.5, opacity: 0.8, marginTop: 8 }}>{t.sub}</div>
+    </div>
+    <div style={{ position: 'relative', textAlign: 'center' }}>{Pill(c, t.cta, c.P.dark, c.P.light, 13)}</div></>),
+  productstory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }, <>
+    <div style={{ position: 'absolute', top: 0, insetInline: 0, height: 300, background: c.P.secondary, opacity: 0.55 }} />
+    <div style={{ position: 'relative', alignSelf: 'stretch' }}>{top(c, 'primary', t.kicker, c.P.primary)}</div>
+    <div style={{ position: 'relative', width: 140, height: 170, marginTop: 38, borderRadius: '70px 70px 18px 18px', background: c.P.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 26px 34px -16px ${withAlpha(c.P.dark, 0.45)}` }}><MarkOnly concept={c.concept} name={c.name} variant="onPrimary" size={72} /></div>
+    <div style={{ position: 'relative', width: 220, height: 18, borderRadius: '50%', background: withAlpha(c.P.dark, 0.18), marginTop: -6 }} />
+    <div style={{ position: 'absolute', top: 108, insetInlineEnd: 26, width: 74, height: 74, borderRadius: '50%', background: c.P.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: c.f.heading, fontWeight: 800, fontSize: 22 }}>{t.big}</div>
+    <div style={{ position: 'relative', marginTop: 'auto' }}>
+      <div style={Head(c, 34)}>{t.headline}</div>
+      <div style={{ fontSize: 13, opacity: 0.68, margin: '8px 8px 16px', lineHeight: 1.45 }}>{t.sub}</div>{Pill(c, t.cta, c.P.dark, c.P.light, 12)}
+    </div></>),
+  appstory: (c, t) => Box(c, { background: c.P.dark, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }, <>
+    <div style={{ position: 'absolute', width: 320, height: 320, borderRadius: '50%', background: withAlpha(c.P.primary, 0.5), filter: 'blur(60px)', top: 120, left: -40 }} />
+    <div style={{ position: 'relative', alignSelf: 'stretch' }}>{top(c, 'inverse', t.kicker, c.A2)}</div>
+    <div style={{ position: 'relative', marginTop: 16 }}><div style={Head(c, 28)}>{t.headline}</div><div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>{t.sub}</div></div>
+    <div style={{ position: 'relative', marginTop: 16, width: 160, height: 214, overflow: 'hidden', borderRadius: 26, background: c.P.light, border: `5px solid ${withAlpha(c.P.light, 0.25)}`, padding: 13, color: c.P.dark, textAlign: 'start', boxShadow: '0 24px 50px -18px rgba(0,0,0,.6)' }}>
+      <div style={{ ...Head(c, 17), lineHeight: 1.1 }}>{c.ar ? 'مرحبًا بعودتك' : 'Welcome back'}</div>
+      <div style={{ background: c.P.primary, color: c.P.light, borderRadius: 13, padding: 11, marginTop: 11 }}><div style={{ fontFamily: c.f.heading, fontSize: 22, fontWeight: 700 }}>{num2(c, '84%')}</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 34, marginTop: 6 }}>{[40, 62, 48, 80, 66, 94, 76].map((h, i) => <i key={i} style={{ flex: 1, height: `${h}%`, background: i === 5 ? c.P.accent : withAlpha(c.P.light, 0.35), borderRadius: 2 }} />)}</div></div>
+      {[0, 1, 2].map((i) => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}><i style={{ width: 24, height: 24, borderRadius: 8, background: [c.P.accent, c.P.secondary, c.P.primary][i] }} /><div style={{ flex: 1 }}><i style={{ display: 'block', height: 6, borderRadius: 3, background: withAlpha(c.P.dark, 0.7), width: `${72 - i * 12}%` }} /><i style={{ display: 'block', height: 5, borderRadius: 3, background: withAlpha(c.P.dark, 0.18), width: '45%', marginTop: 5 }} /></div></div>)}
+    </div>
+    <div style={{ position: 'relative', marginTop: 'auto', paddingTop: 12 }}>{Pill(c, t.cta, c.P.accent, c.P.dark, 12.5)}</div></>),
+  releasestory: (c, t) => Box(c, { background: c.P.dark, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'inverse', t.kicker, c.A2)}
+    <div dir="ltr" style={{ alignSelf: 'flex-start', marginTop: 40, background: c.P.accent, color: c.P.dark, borderRadius: 11, padding: '4px 14px', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 28, fontWeight: 700 }}>{t.big}</div>
+    <div style={Head(c, 36, { marginTop: 16 })}>{t.headline}</div>
+    <div style={{ margin: 'auto 0' }}>{lines(t.items).slice(0, 4).map((l, i) => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderTop: `1px solid ${withAlpha(c.P.light, 0.14)}`, fontSize: 16 }}><span style={{ width: 22, height: 22, borderRadius: '50%', background: withAlpha(c.P.accent, 0.2), color: c.P.accent, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>✓</span>{l}</div>)}</div>{Foot(c)}</>),
+  schedulestory: (c, t) => Box(c, { background: c.P.primary, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'onPrimary', t.kicker, c.A1)}
+    <div style={Head(c, 32, { marginTop: 24 })}>{t.headline}</div>
+    <div style={{ margin: 'auto 0' }}>{rowsOf(t, 5).map(([a, b], i) => <div key={i} style={{ padding: '7px 12px', marginTop: 6, borderRadius: 11, background: i === 0 ? c.P.accent : withAlpha(c.P.light, 0.1), color: i === 0 ? c.P.dark : c.P.light }}><div style={{ fontFamily: c.f.heading, fontWeight: 800, fontSize: 13 }}>{a}</div><div style={{ fontSize: 14, fontWeight: 600, marginTop: 1 }}>{b}</div></div>)}</div>
+    <div style={{ textAlign: 'center' }}>{Pill(c, t.cta, c.P.light, c.P.primary, 12.5)}</div></>),
+  listingstory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, display: 'flex', flexDirection: 'column' }, <>
+    <div style={{ height: 210, background: c.P.secondary, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', width: 90, height: 90, borderRadius: '50%', background: c.P.accent, insetInlineEnd: 30, top: 38 }} />{skyline(c, 270, 170)}
+      <div style={{ position: 'absolute', top: 20, insetInlineStart: 22 }}>{Logo(c, 'primary', 22, 'horizontal', 130)}</div></div>
+    <div style={{ padding: '18px 22px 22px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={Label(c, c.P.primary, 10)}>{t.kicker}</div><div style={Head(c, 28, { marginTop: 6 })}>{t.headline}</div><div style={{ fontSize: 12.5, opacity: 0.65, marginTop: 6 }}>{t.sub}</div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>{rowsOf(t, 3).map(([a, b], i) => <div key={i} style={{ flex: 1, border: `1px solid ${withAlpha(c.P.dark, 0.14)}`, borderRadius: 10, padding: '8px 10px' }}><div style={{ fontFamily: c.f.heading, fontSize: 19, fontWeight: 700 }}>{a}</div><div style={{ fontSize: 10, opacity: 0.6 }}>{b}</div></div>)}</div>
+      <div style={{ marginTop: 'auto' }}><div style={Head(c, 26, { color: c.P.primary })}>{t.big}</div><div style={{ marginTop: 10 }}>{Pill(c, t.cta, c.P.dark, c.P.light, 12)}</div></div>
+    </div></>),
+  coursestory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, display: 'flex', flexDirection: 'column' }, <>
+    <div style={{ background: c.P.primary, color: c.P.light, padding: '24px 24px 30px', position: 'relative', overflow: 'hidden' }}>
+      <MarkOnly concept={c.concept} name={c.name} variant="white" size={200} style={{ position: 'absolute', insetInlineEnd: -50, top: -30, opacity: 0.1 }} />
+      <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>{Logo(c, 'onPrimary', 22, 'horizontal', 130)}{Pill(c, t.kicker, c.P.accent, c.P.dark, 10)}</div>
+      <div style={{ position: 'relative', ...Head(c, 34, { marginTop: 34 }) }}>{t.headline}</div></div>
+    <div style={{ padding: '22px 24px 24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ fontSize: 13.5, opacity: 0.75, lineHeight: 1.5 }}>{t.sub}</div>
+      <div style={{ marginTop: 18 }}>{rowsOf(t, 3).map(([a, b], i) => <div key={i} style={{ background: '#fff', border: `1px solid ${withAlpha(c.P.dark, 0.12)}`, borderRadius: 12, padding: '10px 14px', marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}><span style={Label(c, c.P.primary, 9.5)}>{a}</span><span style={{ fontFamily: c.f.heading, fontWeight: 700, fontSize: 15 }}>{b}</span></div>)}</div>
+      <div style={{ marginTop: 'auto', background: c.P.accent, borderRadius: 12, padding: '13px', textAlign: 'center', fontWeight: 800, fontSize: 14 }}>{t.cta}</div>
+    </div></>),
+  itinerarystory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'primary', t.kicker, c.P.primary)}
+    <div style={Head(c, 34, { marginTop: 34 })}>{t.headline}</div>
+    <div style={{ position: 'relative', margin: 'auto 0', paddingInlineStart: 28 }}>
+      <div style={{ position: 'absolute', insetInlineStart: 7, top: 10, bottom: 10, width: 2, background: withAlpha(c.P.primary, 0.3) }} />
+      {rowsOf(t, 4).map(([a, b], i) => <div key={i} style={{ position: 'relative', padding: '9px 0' }}><i style={{ position: 'absolute', insetInlineStart: -28, top: 13, width: 16, height: 16, borderRadius: '50%', background: i === 0 ? c.P.accent : c.P.primary, border: `3px solid ${c.P.light}` }} /><div style={Label(c, c.P.primary, 9.5)}>{a}</div><div style={{ fontFamily: c.f.heading, fontSize: 16, fontWeight: 600, marginTop: 2 }}>{b}</div></div>)}
+    </div>
+    <div style={{ textAlign: 'center' }}>{Pill(c, t.cta, c.P.dark, c.P.light, 12)}</div></>),
+  casestory: (c, t) => Box(c, { background: c.P.dark, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    <MarkOnly concept={c.concept} name={c.name} variant="white" size={280} style={{ position: 'absolute', insetInlineEnd: -80, top: 40, opacity: 0.07 }} />
+    {top(c, 'inverse', t.kicker, c.A2)}
+    <div style={{ position: 'relative', marginTop: 'auto' }}>
+      <div style={Head(c, fit(t.big, 88, 222, 0.72), { color: c.P.accent, letterSpacing: c.ar ? 0 : '-0.04em', lineHeight: 0.95 })}>{t.big}</div>
+      <div style={Head(c, 28, { marginTop: 16 })}>{t.headline}</div>
+      <div style={{ fontSize: 13, opacity: 0.75, marginTop: 10, lineHeight: 1.45 }}>{t.sub}</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 18 }}>{lines(t.items).slice(0, 4).map((l, i) => <span key={i} style={{ border: `1.5px solid ${withAlpha(c.P.light, 0.5)}`, borderRadius: 99, padding: '4px 11px', fontSize: 11.5, fontWeight: 600 }}>{l}</span>)}</div>
+    </div></>),
+  triostory: (c, t) => Box(c, { background: c.P.primary, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    <MarkOnly concept={c.concept} name={c.name} variant="white" size={260} style={{ position: 'absolute', insetInlineEnd: -90, top: -60, opacity: 0.08 }} />
+    {top(c, 'onPrimary', t.kicker, c.A1)}
+    <div style={{ position: 'relative', ...Head(c, 30, { marginTop: 24 }) }}>{t.headline}</div>
+    <div style={{ position: 'relative', margin: 'auto 0' }}>{rowsOf(t, 3).map(([a, b], i) => <div key={i} style={{ padding: '12px 0', borderTop: `1px solid ${withAlpha(c.P.light, 0.22)}` }}><div style={Head(c, fit(a, 42, 222, 0.62), { color: i === 0 ? c.A1 : c.P.light, letterSpacing: c.ar ? 0 : '-0.03em' })}>{a}</div><div style={{ fontSize: 13.5, opacity: 0.85, marginTop: 3 }}>{b}</div></div>)}</div>
+    <div style={{ position: 'relative' }}>{Foot(c)}</div></>),
+  ingredientsstory: (c, t) => Box(c, { background: c.P.light, color: c.P.dark, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'primary', t.kicker, c.P.primary)}
+    <div style={Head(c, 30, { marginTop: 30 })}>{t.headline}</div><div style={{ fontSize: 12.5, opacity: 0.65, marginTop: 6 }}>{t.sub}</div>
+    <div style={{ margin: 'auto 0' }}>{rowsOf(t, 3).map(([a, b], i) => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0' }}>
+      <div style={{ width: 66, height: 66, flex: 'none', borderRadius: '50%', background: [c.P.secondary, c.P.primary, c.P.accent][i], color: i === 1 ? c.P.light : c.P.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: c.f.heading, fontSize: 22, fontWeight: 700 }}>{num2(c, `0${i + 1}`)}</div>
+      <div><div style={{ fontFamily: c.f.heading, fontSize: 17, fontWeight: 700 }}>{a}</div><div style={{ fontSize: 12, opacity: 0.65, marginTop: 3, lineHeight: 1.35 }}>{b}</div></div></div>)}</div>{Foot(c)}</>),
+  pollstory: (c, t) => Box(c, { background: c.P.dark, color: c.P.light, padding: 24, display: 'flex', flexDirection: 'column' }, <>
+    {top(c, 'inverse', t.kicker, c.A2)}
+    <div style={Head(c, 34, { marginTop: 56 })}>{t.headline}</div>
+    <div style={{ margin: 'auto 0' }}>{lines(t.items).slice(0, 2).map((l, i) => <div key={i} style={{ marginTop: i ? 14 : 0, borderRadius: 16, padding: '20px 18px', background: i ? withAlpha(c.P.light, 0.1) : c.P.accent, color: i ? c.P.light : c.P.dark, fontFamily: c.f.heading, fontWeight: 700, fontSize: 19, display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ width: 28, height: 28, borderRadius: '50%', background: i ? withAlpha(c.P.light, 0.2) : c.P.dark, color: i ? c.P.light : c.P.accent, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>{i ? 'B' : 'A'}</span>{l}</div>)}</div>
+    <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{t.sub}</div>{Foot(c)}</>),
 };
 
 // ---- category print pieces ---------------------------------------------------------------------------------------
@@ -539,11 +683,28 @@ export const TEMPLATES = [
   { id: 'lookbook', group: 'post', en: 'Lookbook', ar: 'لوك بوك', w: 540, h: 540, ratio: 2, fields: f('kicker', 'headline', 'sub', 'cta') },
   { id: 'loyalty', group: 'print', en: 'Loyalty card', ar: 'بطاقة ولاء', w: 504, h: 288, ratio: 4, fields: f('kicker', 'headline', 'sub') },
   { id: 'hangtag', group: 'print', en: 'Hang tag', ar: 'بطاقة منتج', w: 220, h: 380, ratio: 4, fields: f('kicker', 'headline', 'sub', 'items', 'big') },
+  // category stories
+  { id: 'dishstory', group: 'story', en: 'Dish story', ar: 'ستوري طبق', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'big', 'cta') },
+  { id: 'reservestory', group: 'story', en: 'Booking story', ar: 'ستوري حجز', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'items', 'cta') },
+  { id: 'hoursstory', group: 'story', en: 'Hours story', ar: 'ستوري الدوام', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'items', 'sub') },
+  { id: 'lookstory', group: 'story', en: 'Lookbook story', ar: 'ستوري لوك بوك', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'cta') },
+  { id: 'salestory', group: 'story', en: 'Offer story', ar: 'ستوري عرض', w: 270, h: 480, ratio: 4, fields: f('kicker', 'big', 'headline', 'sub', 'cta') },
+  { id: 'productstory', group: 'story', en: 'Product story', ar: 'ستوري منتج', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'big', 'cta') },
+  { id: 'appstory', group: 'story', en: 'App story', ar: 'ستوري تطبيق', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'cta') },
+  { id: 'releasestory', group: 'story', en: 'Release story', ar: 'ستوري إصدار', w: 270, h: 480, ratio: 4, fields: f('kicker', 'big', 'headline', 'items') },
+  { id: 'schedulestory', group: 'story', en: 'Schedule story', ar: 'ستوري جدول', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'items', 'cta') },
+  { id: 'listingstory', group: 'story', en: 'Property story', ar: 'ستوري عقار', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'items', 'big', 'cta') },
+  { id: 'coursestory', group: 'story', en: 'Course story', ar: 'ستوري دورة', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'items', 'cta') },
+  { id: 'itinerarystory', group: 'story', en: 'Itinerary story', ar: 'ستوري رحلة', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'items', 'cta') },
+  { id: 'casestory', group: 'story', en: 'Case study story', ar: 'ستوري دراسة حالة', w: 270, h: 480, ratio: 4, fields: f('kicker', 'big', 'headline', 'sub', 'items') },
+  { id: 'triostory', group: 'story', en: 'Numbers story', ar: 'ستوري أرقام', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'items') },
+  { id: 'ingredientsstory', group: 'story', en: 'Key points story', ar: 'ستوري نقاط', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'sub', 'items') },
+  { id: 'pollstory', group: 'story', en: 'This or that', ar: 'ستوري تصويت', w: 270, h: 480, ratio: 4, fields: f('kicker', 'headline', 'items', 'sub') },
   { id: 'signature', group: 'print', en: 'Email signature', ar: 'توقيع البريد', w: 480, h: 120, ratio: 4, fields: f() },
 ];
 export const FIELD_LABELS = { kicker: { en: 'Label', ar: 'العنوان الصغير' }, headline: { en: 'Headline', ar: 'العنوان' }, sub: { en: 'Supporting text', ar: 'النص الداعم' }, cta: { en: 'Button / note', ar: 'الزر / ملاحظة' }, big: { en: 'Big number', ar: 'الرقم الكبير' }, items: { en: 'Lines (one per line, "name | price" for menus)', ar: 'أسطر (سطر لكل بند، و"البند | السعر" للقوائم)' } };
 
-const RENDERERS = { ...POSTS, ...PORTRAIT, ...STORIES, ...PRINT, ...PACK, ...PACK_PRINT };
+const RENDERERS = { ...POSTS, ...PORTRAIT, ...STORIES, ...PRINT, ...PACK, ...PACK_PRINT, ...PACK_STORIES };
 
 export function Template({ id, project, concept, text, bg }) {
   const c = useCtx(project, concept);

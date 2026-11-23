@@ -111,11 +111,39 @@ export const PACKS = {
   },
 };
 
-export const packIds = (category) => Object.keys(PACKS[category] || {});
-export const packCopy = (category, id, lang) => ({ ...(PACKS[category]?.[id]?.[lang === 'ar' ? 'ar' : 'en'] || {}) });
+// Story templates for each category. Most reuse the starter text of the matching post design in the same category
+// (STORY_FROM); the ones with their own wording are in STORY_COPY.
+const STORY_SETS = {
+  coffee: ['dishstory', 'hoursstory', 'pollstory'], restaurant: ['dishstory', 'reservestory', 'menustory'],
+  fashion: ['lookstory', 'salestory', 'pollstory'], beauty: ['productstory', 'ingredientsstory', 'salestory'],
+  perfume: ['lookstory', 'ingredientsstory', 'productstory'], jewelry: ['productstory', 'lookstory', 'salestory'],
+  tech: ['appstory', 'releasestory', 'triostory'], wellness: ['schedulestory', 'ingredientsstory', 'hoursstory'],
+  fitness: ['schedulestory', 'salestory', 'pollstory'], realestate: ['listingstory', 'triostory', 'hoursstory'],
+  finance: ['triostory', 'appstory', 'qa'], education: ['coursestory', 'triostory', 'tipstory'],
+  travel: ['itinerarystory', 'reservestory', 'salestory'], agency: ['casestory', 'triostory', 'pollstory'],
+  ecommerce: ['salestory', 'productstory', 'pollstory'],
+};
+const STORY_FROM = { dishstory: 'dish', reservestory: 'reserve', hoursstory: 'hours', lookstory: 'lookbook', salestory: 'saleBanner', productstory: 'showcase', appstory: 'appui', releasestory: 'changelog', schedulestory: 'workout', listingstory: 'listing', coursestory: 'course', itinerarystory: 'itinerary', casestory: 'portfolio', triostory: 'trio', ingredientsstory: 'ingredients' };
+const STORY_COPY = {
+  'pollstory:coffee': T({ kicker: 'This or that', headline: 'Which one is your morning cup?', items: 'Flat white\nIced latte', sub: 'Vote with the poll sticker' }, { kicker: 'أيهما تفضّل', headline: 'أي كوب هو كوب صباحك؟', items: 'فلات وايت\nلاتيه مثلج', sub: 'صوّت بملصق التصويت' }),
+  'pollstory:fashion': T({ kicker: 'You choose', headline: 'Which look goes into production?', items: 'Sand wool coat\nOlive trench', sub: 'Vote with the poll sticker' }, { kicker: 'أنتِ تقررين', headline: 'أي إطلالة نبدأ بإنتاجها؟', items: 'معطف صوف رملي\nترينش زيتوني', sub: 'صوّتي بملصق التصويت' }),
+  'pollstory:fitness': T({ kicker: 'This or that', headline: 'Pick your next class', items: 'Morning strength\nEvening HIIT', sub: 'Vote with the poll sticker' }, { kicker: 'أيهما تفضّل', headline: 'اختر حصتك القادمة', items: 'قوة صباحية\nهيت مسائي', sub: 'صوّت بملصق التصويت' }),
+  'pollstory:agency': T({ kicker: 'Design debate', headline: 'Which logo style wins?', items: 'Bold wordmark\nQuiet symbol', sub: 'Vote with the poll sticker' }, { kicker: 'نقاش تصميمي', headline: 'أي أسلوب شعار يفوز؟', items: 'شعار نصي جريء\nرمز هادئ', sub: 'صوّت بملصق التصويت' }),
+  'pollstory:ecommerce': T({ kicker: 'You decide', headline: 'Which colour should we restock?', items: 'Sand\nForest green', sub: 'Vote with the poll sticker' }, { kicker: 'أنت تقرر', headline: 'أي لون نعيد توفيره؟', items: 'رملي\nأخضر غابي', sub: 'صوّت بملصق التصويت' }),
+  'menustory:restaurant': T({ kicker: 'Tonight', headline: 'On the menu', items: 'Saffron rice | 38\nSlow-cooked lamb | 58\nDate pudding | 16' }, { kicker: 'الليلة', headline: 'على القائمة', items: 'أرز بالزعفران | ٣٨\nلحم مطهو ببطء | ٥٨\nبودينغ التمر | ١٦' }),
+  'qa:finance': T({ kicker: 'Ask us anything', headline: 'Your money questions, answered', sub: 'Type your question below' }, { kicker: 'اسألنا', headline: 'نجيب عن أسئلتك المالية', sub: 'اكتب سؤالك أدناه' }),
+  'tipstory:education': T({ kicker: 'Study tip', headline: 'Three habits that help you learn', items: 'Study in short bursts\nTeach it to someone\nSleep before the exam' }, { kicker: 'نصيحة دراسية', headline: 'ثلاث عادات تساعدك على التعلّم', items: 'ادرس على فترات قصيرة\nاشرحه لغيرك\nنَم قبل الاختبار' }),
+};
+
+export const packIds = (category) => [...Object.keys(PACKS[category] || {}), ...(STORY_SETS[category] || []).filter((id) => !(PACKS[category] || {})[id])];
+export const packCopy = (category, id, lang) => {
+  const entry = PACKS[category]?.[id] || STORY_COPY[`${id}:${category}`] || PACKS[category]?.[STORY_FROM[id]];
+  return { ...(entry?.[lang === 'ar' ? 'ar' : 'en'] || {}) };
+};
 
 // Generic starter text for a template that has no copy for this category: borrow the first pack that defines it.
 export function anyPackCopy(id, lang) {
-  for (const cat of Object.keys(PACKS)) if (PACKS[cat][id]) return packCopy(cat, id, lang);
+  for (const cat of Object.keys(PACKS)) if (PACKS[cat][id] || PACKS[cat][STORY_FROM[id]]) return packCopy(cat, id, lang);
+  for (const key of Object.keys(STORY_COPY)) if (key.startsWith(`${id}:`)) return { ...(STORY_COPY[key][lang === 'ar' ? 'ar' : 'en'] || {}) };
   return {};
 }
