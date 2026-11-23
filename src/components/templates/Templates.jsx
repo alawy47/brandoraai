@@ -75,9 +75,9 @@ const POSTS = {
       <div dir="ltr" style={{ marginTop: 14, fontSize: 14, opacity: 0.6, textAlign: c.ar ? 'right' : 'left' }}>{c.handle}</div>
     </div></>),
   giveaway: (c, t) => Box(c, { background: c.P.primary, color: c.P.light, padding: 46, display: 'flex', flexDirection: 'column' }, <>
-    <div style={{ position: 'absolute', width: 132, height: 132, borderRadius: '50%', background: c.P.accent, color: c.P.dark, insetInlineEnd: 40, top: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 10, fontFamily: c.f.heading, fontWeight: 800, fontSize: 25, lineHeight: 1.1, transform: 'rotate(-8deg)' }}>{t.kicker}</div>
+    <div style={{ position: 'absolute', width: 98, height: 98, borderRadius: '50%', background: c.P.accent, color: c.P.dark, insetInlineEnd: 38, top: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 10, fontFamily: c.f.heading, fontWeight: 800, fontSize: 20, lineHeight: 1.1, transform: 'rotate(-8deg)' }}>{t.kicker}</div>
     <div style={{ marginTop: 'auto' }}>
-      <div style={Head(c, 66)}>{t.headline}</div>
+      <div style={Head(c, 56, { maxWidth: 330 })}>{t.headline}</div>
       <div style={{ fontSize: 18, opacity: 0.85, margin: '14px 0 18px' }}>{t.sub}</div>
       {lines(t.items).slice(0, 3).map((l, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 0', fontSize: 21, fontWeight: 600 }}>
