@@ -1,5 +1,5 @@
 import { CATEGORIES, PERSONALITIES } from '../../src/data/options.js';
-import { DIRECTIONS } from './schemas.js';
+import { DIRECTIONS, MARKS, LAYOUTS, LATIN, ARABIC } from './schemas.js';
 
 export const SYSTEM = `You are the creative director of BRANDORA, a brand identity studio for founders in the Gulf and worldwide. You work like a senior agency team: strategist, identity designer and copywriter.
 
@@ -13,7 +13,11 @@ Principles:
 - Avoid filler words such as "elevate", "unleash", "journey" and "seamless".
 
 Logo directions you can use (style ids): ${DIRECTIONS.join(', ')}.
-Lockups: horizontal, stacked, icon, wordmark, crest (luxury), badge (vintage), emblem (circular), box (streetwear), corporate (with descriptor).`;
+Lockups (layout ids): ${LAYOUTS.join(', ')}. crest suits luxury, badge vintage, emblem is circular, box streetwear, corporate adds a descriptor.
+Symbol ids (mark): ${MARKS.join(', ')}.
+Use these exact ids and font family names; anything else is replaced.
+Latin font families: ${LATIN.join(', ')}.
+Arabic font families: ${ARABIC.join(', ')}.`;
 
 export function briefText(input) {
   const cat = CATEGORIES.find((c) => c.id === input.category);

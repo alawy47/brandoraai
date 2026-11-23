@@ -1,6 +1,6 @@
 // The AI tasks, independent of the web framework. Express (server/index.js) and Netlify
 // Functions (netlify/functions) call these with the same inputs and get the same results.
-import { BrandResult, LogoList, LogoPatch, BriefInput, IgIdeas, IgInput } from '../lib/schemas.js';
+import { BrandResult, LogoList, LogoPatch, BriefInput, IgIdeas, IgInput, normalizeLogo, normalizeFonts } from '../lib/schemas.js';
 import { SYSTEM, brandPrompt, directionsPrompt, refinePrompt, mockupPrompt, symbolPrompt, igPrompt } from '../lib/prompts.js';
 
 // Anthropic's SDK refuses non-streaming requests that could run past 10 minutes (about 21,000 output tokens or more),
@@ -23,7 +23,8 @@ function finishConcept(c, input) {
     ...c,
     id: `concept_${Date.now().toString(36)}${seq.toString(36)}`,
     palette: c.palette.map((p) => ({ ...p, hex: HEX.test(p.hex) ? p.hex.toUpperCase() : '#777777' })),
-    logo: { ...c.logo, id: `${c.logo.style}-ai-${Date.now().toString(36)}${seq}` },
+    fonts: normalizeFonts(c.fonts),
+    logo: { ...normalizeLogo(c.logo), id: `${normalizeLogo(c.logo).style}-ai-${Date.now().toString(36)}${seq}` },
     social: { posts: c.social.posts, stories: [{ type: 'arrival', ...c.social.stories.arrival }, { type: 'poll', ...c.social.stories.poll }], hashtags: c.social.hashtags },
     card: { name: lang === 'ar' ? 'ليلى حداد' : 'Layla Haddad', title: lang === 'ar' ? 'المؤسسة' : 'Founder', phone: '+971 50 123 4567', email: `hello@${slug}.com`, web: `${slug}.com`, city: lang === 'ar' ? 'دبي، الإمارات' : 'Dubai, UAE' },
   };
@@ -44,12 +45,12 @@ export function createHandlers(registry) {
     async directions({ input, direction, count = 6 }) {
       if (!input?.name || !direction) throw new InputError('Send the brief and a direction.');
       const out = await registry.run('text', { system: SYSTEM, prompt: directionsPrompt(input, direction, Math.min(9, count)), schema: LogoList, maxTokens: 6000, effort: 'low' });
-      return { logos: out.data.logos.map((l, i) => ({ ...l, id: `${l.style}-ai-${Date.now().toString(36)}-${i}` })), provider: out.provider };
+      return { logos: out.data.logos.map((l) => normalizeLogo(l)).map((l, i) => ({ ...l, id: `${l.style}-ai-${Date.now().toString(36)}-${i}` })), provider: out.provider };
     },
     async refine({ input, logo, request }) {
       if (!input?.name || !logo || !request?.trim()) throw new InputError('Send the brief, the logo and what to change.');
       const out = await registry.run('text', { system: SYSTEM, prompt: refinePrompt(input, logo, request.slice(0, 500)), schema: LogoPatch, maxTokens: 3000, effort: 'low' });
-      return { ...out.data, provider: out.provider };
+      return { ...out.data, patch: normalizeLogo(out.data.patch, true), provider: out.provider };
     },
     /** Image model draws a flat symbol, then it is vectorised into one clean SVG path. */
     async symbol({ input, idea, direction }) {

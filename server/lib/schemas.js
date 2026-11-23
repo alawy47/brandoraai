@@ -7,16 +7,18 @@ export const MARKS = ['monogram-circle', 'monogram-square', 'monogram-split', 'h
   'heart', 'bolt', 'anchor', 'compass', 'feather', 'palm', 'knot', 'cup', 'house', 'initials', 'mascot-fox', 'mascot-owl', 'mascot-bear'];
 export const DIRECTIONS = ['minimal', 'luxury', 'geometric', 'abstract', 'wordmark', 'lettermark', 'mascot', 'vintage', 'futuristic', 'streetwear', 'corporate', 'emblem'];
 export const LAYOUTS = ['horizontal', 'stacked', 'icon', 'wordmark', 'crest', 'badge', 'emblem', 'box', 'corporate'];
-const LATIN = FONT_LIBRARY.filter((f) => f.script === 'latin').map((f) => f.family);
-const ARABIC = FONT_LIBRARY.filter((f) => f.script === 'arabic').map((f) => f.family);
+export const LATIN = FONT_LIBRARY.filter((f) => f.script === 'latin').map((f) => f.family);
+export const ARABIC = FONT_LIBRARY.filter((f) => f.script === 'arabic').map((f) => f.family);
 
 const Bilingual = z.object({ en: z.string(), ar: z.string() });
 const Color = z.object({ role: z.enum(['primary', 'secondary', 'accent', 'dark', 'light']), hex: z.string().describe('#RRGGBB'), name: Bilingual });
 const Post = z.object({ type: z.enum(['launch', 'product', 'quote']), kicker: z.string(), headline: z.string(), sub: z.string(), cta: z.string(), caption: z.string() });
 
+// Long lists (fonts, symbols, styles) are plain strings: as enums they make Claude's structured-output grammar
+// too large. The prompt lists the allowed values and normalizeLogo/normalizeFonts repair anything else.
 export const LogoConfig = z.object({
-  style: z.enum(DIRECTIONS), mark: z.enum(MARKS), layout: z.enum(LAYOUTS),
-  font: z.enum(LATIN), fontAr: z.enum(ARABIC), weight: z.number().int().describe('100-900'),
+  style: z.string().describe('a logo direction id'), mark: z.string().describe('a symbol id'), layout: z.string().describe('a lockup id'),
+  font: z.string().describe('a Latin font family from the library'), fontAr: z.string().describe('an Arabic font family from the library'), weight: z.number().int().describe('100-900'),
   case: z.enum(['asis', 'upper', 'lower']), tracking: z.number().describe('letter spacing in em, -0.05 to 0.45'),
   colorway: z.enum(['primary', 'accent', 'ink']), rationale: z.string().describe('one or two sentences in the brand language'),
 });
@@ -31,7 +33,7 @@ const Concept = z.object({
   direction: z.enum(['signature', 'contrast', 'expressive']), title: z.string(), summary: z.string(), tagline: z.string(), story: z.string(), mission: z.string(),
   values: z.array(z.string()), voice: z.object({ traits: z.array(z.string()), sample: z.string() }), match: z.number().int(),
   palette: z.array(Color).describe('exactly 5: primary, secondary, accent, dark, light'),
-  fonts: z.object({ heading: z.enum(LATIN), body: z.enum(LATIN), headingAr: z.enum(ARABIC), bodyAr: z.enum(ARABIC) }),
+  fonts: z.object({ heading: z.string(), body: z.string(), headingAr: z.string(), bodyAr: z.string() }).describe('font families from the library'),
   logo: LogoConfig,
   social: z.object({
     posts: z.array(Post).describe('3 posts: launch, product, quote'),
@@ -47,6 +49,26 @@ export const LogoPatch = z.object({
   applied: z.array(z.string()).describe('each change in a few words, in the language of the request'),
   note: z.string().describe('one sentence of design reasoning'),
 });
+
+const lookup = (list) => { const m = new Map(list.map((v) => [v.toLowerCase().replace(/[^a-z0-9]/g, ''), v])); return (v) => m.get(String(v ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')); };
+const findLatin = lookup(LATIN), findArabic = lookup(ARABIC), findMark = lookup(MARKS), findStyle = lookup(DIRECTIONS), findLayout = lookup(LAYOUTS);
+const DEFAULTS = { style: 'minimal', mark: 'monogram-circle', layout: 'horizontal', font: LATIN.includes('Inter') ? 'Inter' : LATIN[0], fontAr: ARABIC.includes('IBM Plex Sans Arabic') ? 'IBM Plex Sans Arabic' : ARABIC[0] };
+const clamp = (n, lo, hi, d) => (Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d);
+
+/** Maps model output onto values the app can render. With partial = true, missing fields stay missing. */
+export function normalizeLogo(l = {}, partial = false) {
+  const out = { ...l };
+  const fix = (k, find) => { if (k in l || !partial) out[k] = find(l[k]) ?? DEFAULTS[k]; };
+  fix('style', findStyle); fix('mark', findMark); fix('layout', findLayout); fix('font', findLatin); fix('fontAr', findArabic);
+  if ('weight' in l || !partial) out.weight = Math.round(clamp(Number(l.weight), 100, 900, 600) / 100) * 100;
+  if ('tracking' in l || !partial) out.tracking = clamp(Number(l.tracking), -0.05, 0.45, 0);
+  if ('case' in l || !partial) out.case = ['asis', 'upper', 'lower'].includes(l.case) ? l.case : 'asis';
+  if ('colorway' in l || !partial) out.colorway = ['primary', 'accent', 'ink'].includes(l.colorway) ? l.colorway : 'primary';
+  return out;
+}
+export function normalizeFonts(f = {}) {
+  return { heading: findLatin(f.heading) ?? DEFAULTS.font, body: findLatin(f.body) ?? DEFAULTS.font, headingAr: findArabic(f.headingAr) ?? DEFAULTS.fontAr, bodyAr: findArabic(f.bodyAr) ?? DEFAULTS.fontAr };
+}
 
 export const BriefInput = z.object({
   name: z.string().trim().min(1).max(40), category: z.string(), personality: z.string(),
