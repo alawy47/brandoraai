@@ -121,3 +121,25 @@ test('Anthropic provider: brand-sized requests pass the SDK non-streaming guard'
   await assert.rejects(ask(BRAND_MAX_TOKENS), (e) => !/Streaming is required/.test(e.message)); // reaches the network, which answers 401
   await assert.rejects(ask(32000), /Streaming is required/); // documents why the limit exists
 });
+
+test('anthropic falls back to JSON in the prompt when the structured-output grammar is too large', async () => {
+  const { anthropicProvider } = await import('../providers/anthropic.js');
+  const { z } = await import('zod');
+  const schema = z.object({ title: z.string(), n: z.number().int() });
+  const bodies = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const body = JSON.parse(init.body); bodies.push(body);
+    if (body.output_config?.format) return new Response(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'The compiled grammar is too large, which would cause performance issues.' } }), { status: 400, headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify({ id: 'm', type: 'message', role: 'assistant', model: 'claude-opus-5-5', stop_reason: 'end_turn', content: [{ type: 'text', text: 'Here: {"title":"Qahwa","n":3}' }], usage: { input_tokens: 10, output_tokens: 5 } }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  try {
+    const p = anthropicProvider({ ANTHROPIC_API_KEY: 'test' });
+    const a = await p.tasks.text({ system: 's', prompt: 'p', schema });
+    assert.deepEqual(a.data, { title: 'Qahwa', n: 3 });
+    assert.equal(bodies.length, 2);
+    assert.match(bodies[1].messages[0].content, /JSON Schema/);
+    await p.tasks.text({ system: 's', prompt: 'p', schema });
+    assert.equal(bodies.length, 3, 'the second call skips the strict attempt');
+  } finally { globalThis.fetch = realFetch; }
+});
