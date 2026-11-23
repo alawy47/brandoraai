@@ -64,15 +64,3 @@ export const mockupPrompt = ({ input, scene, palette, tagline }) =>
 
 export const symbolPrompt = ({ input, idea, direction }) =>
   `A single flat logo symbol for a brand called "${input.name}" (${CATEGORIES.find((c) => c.id === input.category)?.en}). Idea: ${idea}. Style: ${direction || 'minimal geometric'}. Solid black shape on a plain white background, centred, no text, no letters, no gradients, no shadows, no outlines of a frame, bold simple forms that work at 16 pixels. Vector style.`;
-
-export function igPrompt({ profile, posts, brand }) {
-  const lang = brand.language === 'ar' ? 'Arabic' : 'English';
-  const lines = posts.map((p, i) => `${i + 1}. [${p.media_type || 'post'}${p.like_count != null ? `, ${p.like_count} likes` : ''}${p.comments_count != null ? `, ${p.comments_count} comments` : ''}] ${(p.caption || '(no caption)').replace(/\s+/g, ' ').slice(0, 400)}`).join('\n');
-  return `Instagram account: @${profile.username}${profile.name ? ` (${profile.name})` : ''}${profile.account_type ? `, ${profile.account_type}` : ''}
-Bio: ${profile.biography || '(empty)'}
-Followers: ${profile.followers_count ?? 'unknown'}; posts: ${profile.media_count ?? 'unknown'}
-${brand.name ? `Brand in BRANDORA: ${brand.name}${brand.category ? ` (${brand.category})` : ''}\n` : ''}Recent posts, newest first:
-${lines || '(none available)'}
-
-Task: study what this account posts and how it sounds, then suggest exactly 3 NEW post ideas that fit it and are not copies of its existing posts. Each idea must work as one square image with text on it (the "visual" fields are the text printed on the image), plus a caption and 5 hashtags. Pick the template that suits each idea: quote, tips (3 points), sale, testimonial, launch or product. Use the posts with the most likes and comments as evidence of what works. Write the headline, caption and hashtags in ${lang}. Do not invent facts, prices, discounts or customer names; for a sale use a placeholder offer only if the account already runs offers, and for a testimonial write a plausible short review that the owner must replace with a real one (say so in "why").`;
-}

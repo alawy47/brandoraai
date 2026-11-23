@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import ScaledFrame from '../../components/social/ScaledFrame';
-import { InstagramPost, InstagramStory } from '../../components/social/SocialDesigns';
+import { SocialPost, SocialStory } from '../../components/social/SocialDesigns';
 import { useI18n } from '../../i18n/I18nContext';
 import { downloadNode } from '../../lib/download';
 import { slugify, extraSocial } from '../../lib/generator';
@@ -42,7 +42,7 @@ export default function SocialTab({ project, concept }) {
                   <p className="text-sm leading-relaxed text-soft" dir={dir}>{post.caption}</p>
                 </div>
               )}>
-              <InstagramPost project={project} concept={concept} post={post} />
+              <SocialPost project={project} concept={concept} post={post} />
             </Exportable>
           ))}
         </div>
@@ -53,7 +53,7 @@ export default function SocialTab({ project, concept }) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stories.map((story, i) => (
             <Exportable key={story.type} id={`story${i}`} width={270} height={480} ratio={4} filename={`${slug}-story-${story.type}.png`} busy={busy} run={run}>
-              <InstagramStory project={project} concept={concept} story={story} />
+              <SocialStory project={project} concept={concept} story={story} />
             </Exportable>
           ))}
           <div className="panel flex flex-col p-6">

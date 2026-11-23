@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    nav: { features: 'Features', how: 'How it works', showcase: 'Showcase', dashboard: 'Dashboard', create: 'Create a brand', settings: 'AI providers', instagram: 'Instagram', home: 'Home', menu: 'Menu' },
+    nav: { features: 'Features', how: 'How it works', showcase: 'Showcase', dashboard: 'Dashboard', create: 'Create a brand', settings: 'AI providers', home: 'Home', menu: 'Menu' },
     common: {
       back: 'Back', save: 'Save', cancel: 'Cancel', delete: 'Delete', rename: 'Rename', duplicate: 'Duplicate', open: 'Open',
       copy: 'Copy', copied: 'Copied', download: 'Download', png: 'PNG', svg: 'SVG', pdf: 'PDF', apply: 'Use this logo', applied: 'Logo updated',
@@ -17,7 +17,7 @@ export const translations = {
       deliverSub: 'Each concept arrives as a working system, not a single logo. These are real outputs from a sample brand.',
       d1: 'Logo suite', d1s: 'Primary, stacked, icon and one‑color versions as SVG and PNG.',
       d2: 'Palette and type', d2s: 'Five named colors with HEX, RGB and CMYK, plus a heading and body pairing for each script.',
-      d3: 'Instagram kit', d3s: 'Launch, product and quote posts, two stories, captions and hashtags.',
+      d3: 'Social kit', d3s: 'Launch, product and quote posts, two stories, captions and hashtags.',
       d4: 'Print mockups', d4s: 'Business card front and back, box, bag and a product label.',
       d5: 'Brand book PDF', d5s: 'A nine‑page guideline document you can send to printers and agencies.',
       d6: 'Brand kit', d6s: 'Cover images for X, LinkedIn, Facebook and YouTube, profile pictures, an app icon, wallpapers, 15 background styles and an email signature.',
@@ -61,7 +61,7 @@ export const translations = {
       palette: 'Color palette', paletteSub: 'Click any value to copy it.', typography: 'Typography', heading: 'Heading', body: 'Body', latin: 'Latin', arabicScript: 'Arabic',
       scale: 'Type scale', contrast: 'Contrast',
       roles: { primary: 'Primary', secondary: 'Secondary', accent: 'Accent', dark: 'Dark', light: 'Light' },
-      posts: 'Instagram posts', stories: 'Instagram stories', caption: 'Caption', hashtags: 'Hashtags',
+      posts: 'Social posts', stories: 'Stories', caption: 'Caption', hashtags: 'Hashtags',
       card: 'Business card', front: 'Front', back: 'Back', packaging: 'Packaging', box: 'Gift box', bag: 'Shopping bag', label: 'Product', flip: 'Flip card',
       ex: {
         zipTitle: 'Complete brand package', zipDesc: 'Everything in one ZIP, named and organised for designers, printers and developers.',
@@ -72,7 +72,7 @@ export const translations = {
       brief: { title: 'Creative brief', subAi: 'Written by the language model from your answers.', subSample: 'Built from your answers by the sample engine. Connect a language model for a written strategy.', objective: 'Objective', positioning: 'Positioning', insight: 'Audience insight', cues: 'Visual direction', avoid: 'Avoid' },
       mk: {
         apparelTitle: 'Apparel and stationery', apparelSub: 'Your identity on merchandise and office print.', tee: 'T-shirt', cap: 'Cap', stationery: 'Letterhead and envelope',
-        placesTitle: 'Storefront and website', placesSub: 'How the brand meets customers in the street and online.', store: 'Store signage', website: 'Website header', igTitle: 'Instagram profile', ig: 'Profile page',
+        placesTitle: 'Storefront and website', placesSub: 'How the brand meets customers in the street and online.', store: 'Store signage', website: 'Website header', igTitle: 'Social profile', ig: 'Profile page',
         photoTitle: 'Photo-realistic mockup', photoSub: 'An image model places your identity in a real-world scene. Each image is generated live and costs one image request.',
         scene_storefront: 'Storefront', scene_packaging: 'Packaging', scene_apparel: 'Apparel', 'scene_coffee-cup': 'Takeaway cup', scene_office: 'Office wall', scene_billboard: 'Billboard',
         photoBtn: 'Generate photo mockup', photoReady: 'Choose a scene and generate. The vector mockups above stay the source of truth for print.',
@@ -116,7 +116,7 @@ export const translations = {
       },
       exportTitle: 'Export your brand', exportSub: 'Download the full brand book or individual assets.',
       pdfTitle: 'Brand book PDF', pdfDesc: 'Nine landscape pages: cover, story, logo, colors, typography, social, backgrounds and covers, print, and contact.', pdfBtn: 'Export PDF', pdfWorking: 'Building page', pdfDone: 'Brand book downloaded',
-      logoFiles: 'Logo files', logoFilesDesc: 'Vector SVG with the font embedded, and 2000px PNG with a transparent background.', otherFiles: 'Instagram posts, stories and mockups download as PNG from their own tabs.',
+      logoFiles: 'Logo files', logoFilesDesc: 'Vector SVG with the font embedded, and 2000px PNG with a transparent background.', otherFiles: 'Social posts, stories and mockups download as PNG from their own tabs.',
       status: { draft: 'Draft', progress: 'In progress', completed: 'Completed' }, markComplete: 'Mark as completed',
       notFound: 'This project does not exist or was deleted.', toDashboard: 'Go to dashboard',
       editBrief: 'Edit brief',
@@ -146,20 +146,6 @@ export const translations = {
       step2Note: 'Model names are set with CLAUDE_MODEL, OPENAI_TEXT_MODEL, OPENAI_IMAGE_MODEL, GEMINI_TEXT_MODEL and GEMINI_IMAGE_MODEL. Potrace vectorising works with no key.',
       step3: 'Start the server', step4: 'Point the app at it and restart the dev server',
     },
-    ig: {
-      title: 'Instagram post ideas', sub: 'Connect your Instagram account. BRANDORA reads your profile and recent captions, suggests three post ideas that fit your account, and designs the one you pick in your brand colours.',
-      needsApi: 'This feature needs the BRANDORA API (Netlify Functions or a server).', needsText: 'Ideas need a language model key (Anthropic Claude or Google Gemini).',
-      setupTitle: 'Set up Instagram once', setupSub: 'Instagram only lets accounts be read after their owner approves, so the site needs a free Meta app. This takes about ten minutes, plus Meta review before other people can connect.',
-      s1: 'Open developers.facebook.com and create an app (type Business). Add the product “Instagram” → “API setup with Instagram login”.', s2: 'Your Instagram account must be a Business or Creator account (free; Settings → Account type).',
-      s3: 'Under Business login settings, paste the three addresses below.', s4: 'Copy the Instagram app ID and secret into Netlify environment variables, then redeploy.', s5: 'Until the app passes Meta review, only accounts you add as testers can connect. Add yourself under Roles.',
-      redirect: 'OAuth redirect URI', deauth: 'Deauthorize callback URL', deletion: 'Data deletion request URL', envVars: 'Netlify variables',
-      connectTitle: 'Connect your Instagram account', connectSub: 'You sign in on instagram.com and approve read-only access to your profile and posts. BRANDORA never posts for you, and you can disconnect at any time.', connectBtn: 'Connect Instagram',
-      connected: 'Instagram connected', disconnected: 'Instagram disconnected', deleted: 'Your Instagram data was deleted', denied: 'The connection was cancelled on Instagram.', stateError: 'The connection could not be verified. Try again.',
-      loading: 'Reading your account…', followers: 'followers', postsCount: 'posts', refresh: 'Refresh', disconnect: 'Disconnect',
-      ideasTitle: 'Post ideas', ideasSub: 'Three single-image post ideas based on what your account posts and what gets the most likes.', designWith: 'Design with brand', suggest: 'Suggest 3 ideas', again: 'Suggest new ideas',
-      analysis: 'What we see in your account', niche: 'Niche', tone: 'Tone', audience: 'Audience', opportunity: 'Opportunity', caption: 'Caption', copy: 'Copy',
-      note: 'Review each idea before posting. Sales, prices and customer reviews are placeholders until you replace them with real ones.',
-    },
     dash: {
       title: 'Your brands', sub: 'Every identity you create is saved here.', newBrand: 'New brand',
       stats: { total: 'Projects', completed: 'Completed', concepts: 'Concepts generated', favorites: 'Favourites' },
@@ -173,7 +159,7 @@ export const translations = {
   },
 
   ar: {
-    nav: { features: 'المزايا', how: 'كيف يعمل', showcase: 'نماذج', dashboard: 'لوحة التحكم', create: 'أنشئ علامتك', settings: 'مزودو الذكاء الاصطناعي', instagram: 'إنستغرام', home: 'الرئيسية', menu: 'القائمة' },
+    nav: { features: 'المزايا', how: 'كيف يعمل', showcase: 'نماذج', dashboard: 'لوحة التحكم', create: 'أنشئ علامتك', settings: 'مزودو الذكاء الاصطناعي', home: 'الرئيسية', menu: 'القائمة' },
     common: {
       back: 'رجوع', save: 'حفظ', cancel: 'إلغاء', delete: 'حذف', rename: 'إعادة تسمية', duplicate: 'نسخ', open: 'فتح',
       copy: 'نسخ', copied: 'تم النسخ', download: 'تنزيل', png: 'PNG', svg: 'SVG', pdf: 'PDF', apply: 'اعتماد هذا الشعار', applied: 'تم تحديث الشعار',
@@ -190,7 +176,7 @@ export const translations = {
       deliverSub: 'يصلك كل مفهوم كنظام متكامل وليس مجرد شعار. هذه مخرجات حقيقية لعلامة نموذجية.',
       d1: 'مجموعة الشعار', d1s: 'النسخة الأساسية والعمودية والأيقونة وأحادية اللون بصيغتي SVG وPNG.',
       d2: 'الألوان والخطوط', d2s: 'خمسة ألوان بأسمائها وقيم HEX وRGB وCMYK، مع زوج خطوط للعناوين والنصوص لكل لغة.',
-      d3: 'حزمة إنستغرام', d3s: 'منشورات إطلاق ومنتج واقتباس، وقصتان، مع النصوص والوسوم.',
+      d3: 'حزمة السوشال ميديا', d3s: 'منشورات إطلاق ومنتج واقتباس، وقصتان، مع النصوص والوسوم.',
       d4: 'نماذج المطبوعات', d4s: 'بطاقة عمل بوجهين، وعلبة، وحقيبة، وملصق منتج.',
       d5: 'دليل العلامة PDF', d5s: 'دليل من تسع صفحات يمكنك إرساله للمطابع والوكالات.',
       d6: 'حزمة العلامة', d6s: 'صور غلاف لإكس ولينكدإن وفيسبوك ويوتيوب، وصور شخصية، وأيقونة تطبيق، وخلفيات شاشة، و١٥ نمط خلفية، وتوقيع بريد إلكتروني.',
@@ -234,7 +220,7 @@ export const translations = {
       palette: 'لوحة الألوان', paletteSub: 'اضغط على أي قيمة لنسخها.', typography: 'الخطوط', heading: 'العناوين', body: 'النصوص', latin: 'لاتيني', arabicScript: 'عربي',
       scale: 'مقاسات الخط', contrast: 'التباين',
       roles: { primary: 'أساسي', secondary: 'ثانوي', accent: 'مميِّز', dark: 'داكن', light: 'فاتح' },
-      posts: 'منشورات إنستغرام', stories: 'قصص إنستغرام', caption: 'النص المرافق', hashtags: 'الوسوم',
+      posts: 'منشورات السوشال', stories: 'قصص', caption: 'النص المرافق', hashtags: 'الوسوم',
       card: 'بطاقة العمل', front: 'الوجه الأمامي', back: 'الوجه الخلفي', packaging: 'التغليف', box: 'علبة هدايا', bag: 'حقيبة تسوق', label: 'المنتج', flip: 'اقلب البطاقة',
       ex: {
         zipTitle: 'حزمة العلامة الكاملة', zipDesc: 'كل شيء في ملف ZIP واحد، بأسماء وتنظيم يناسب المصممين والمطابع والمطورين.',
@@ -245,7 +231,7 @@ export const translations = {
       brief: { title: 'الموجز الإبداعي', subAi: 'كتبه النموذج اللغوي بناءً على إجاباتك.', subSample: 'مبني من إجاباتك بواسطة المحرك التجريبي. اربط نموذجًا لغويًا للحصول على استراتيجية مكتوبة.', objective: 'الهدف', positioning: 'التموضع', insight: 'فهم الجمهور', cues: 'الاتجاه البصري', avoid: 'تجنّب' },
       mk: {
         apparelTitle: 'الملابس والقرطاسية', apparelSub: 'هويتك على المنتجات الترويجية ومطبوعات المكتب.', tee: 'تيشيرت', cap: 'قبعة', stationery: 'ورق رسمي وظرف',
-        placesTitle: 'واجهة المتجر والموقع', placesSub: 'كيف تقابل العلامة عملاءها في الشارع وعلى الإنترنت.', store: 'لافتة المتجر', website: 'واجهة الموقع', igTitle: 'حساب إنستغرام', ig: 'صفحة الحساب',
+        placesTitle: 'واجهة المتجر والموقع', placesSub: 'كيف تقابل العلامة عملاءها في الشارع وعلى الإنترنت.', store: 'لافتة المتجر', website: 'واجهة الموقع', igTitle: 'حساب السوشال ميديا', ig: 'صفحة الحساب',
         photoTitle: 'نموذج واقعي بالصور', photoSub: 'يضع نموذج الصور هويتك في مشهد حقيقي. تُولَّد كل صورة مباشرة وتكلّف طلب صورة واحد.',
         scene_storefront: 'واجهة متجر', scene_packaging: 'تغليف', scene_apparel: 'ملابس', 'scene_coffee-cup': 'كوب سفري', scene_office: 'جدار مكتب', scene_billboard: 'لوحة إعلانية',
         photoBtn: 'ولّد نموذجًا واقعيًا', photoReady: 'اختر مشهدًا وولّده. تبقى النماذج المتجهية أعلاه المرجع للطباعة.',
@@ -289,7 +275,7 @@ export const translations = {
       },
       exportTitle: 'صدّر علامتك', exportSub: 'نزّل دليل العلامة كاملًا أو أي عنصر منفرد.',
       pdfTitle: 'دليل العلامة PDF', pdfDesc: 'تسع صفحات أفقية: الغلاف، القصة، الشعار، الألوان، الخطوط، التواصل، الخلفيات وصور الغلاف، المطبوعات، والتواصل معنا.', pdfBtn: 'صدّر PDF', pdfWorking: 'تجهيز الصفحة', pdfDone: 'تم تنزيل دليل العلامة',
-      logoFiles: 'ملفات الشعار', logoFilesDesc: 'ملف SVG متجهي مع تضمين الخط، وملف PNG بعرض ٢٠٠٠ بكسل وخلفية شفافة.', otherFiles: 'تُنزّل منشورات وقصص إنستغرام والنماذج بصيغة PNG من تبويباتها.',
+      logoFiles: 'ملفات الشعار', logoFilesDesc: 'ملف SVG متجهي مع تضمين الخط، وملف PNG بعرض ٢٠٠٠ بكسل وخلفية شفافة.', otherFiles: 'تُنزّل منشورات وقصص السوشال ميديا والنماذج بصيغة PNG من تبويباتها.',
       status: { draft: 'مسودة', progress: 'قيد العمل', completed: 'مكتمل' }, markComplete: 'تحديد كمكتمل',
       notFound: 'هذا المشروع غير موجود أو تم حذفه.', toDashboard: 'اذهب إلى لوحة التحكم',
       editBrief: 'تعديل الطلب',
@@ -317,20 +303,6 @@ export const translations = {
       setupTitle: 'الإعداد', step1: 'ثبّت خادم الواجهة البرمجية', step2: 'أضف مفاتيح المزودين الذين تستخدمهم (يكفي مزود نصوص واحد للبدء)',
       step2Note: 'تُحدد أسماء النماذج عبر CLAUDE_MODEL وOPENAI_TEXT_MODEL وOPENAI_IMAGE_MODEL وGEMINI_TEXT_MODEL وGEMINI_IMAGE_MODEL. التحويل المتجهي عبر Potrace يعمل بدون مفتاح.',
       step3: 'شغّل الخادم', step4: 'وجّه التطبيق إليه وأعد تشغيل خادم التطوير',
-    },
-    ig: {
-      title: 'أفكار منشورات إنستغرام', sub: 'اربط حسابك على إنستغرام. يقرأ براندورا نبذتك وآخر نصوص منشوراتك، ويقترح ثلاث أفكار تناسب حسابك، ثم يصمم الفكرة التي تختارها بألوان علامتك.',
-      needsApi: 'هذه الميزة تحتاج خادم براندورا (دوال Netlify أو خادمًا).', needsText: 'الأفكار تحتاج مفتاح نموذج لغوي (Anthropic Claude أو Google Gemini).',
-      setupTitle: 'إعداد إنستغرام مرة واحدة', setupSub: 'لا يسمح إنستغرام بقراءة الحساب إلا بعد موافقة صاحبه، لذلك يحتاج الموقع تطبيقًا مجانيًا على Meta. يستغرق نحو عشر دقائق، ثم مراجعة Meta قبل أن يربط الآخرون حساباتهم.',
-      s1: 'افتح developers.facebook.com وأنشئ تطبيقًا (النوع Business)، وأضف المنتج “Instagram” ثم “API setup with Instagram login”.', s2: 'يجب أن يكون حسابك على إنستغرام من نوع Business أو Creator (مجاني، من الإعدادات ← نوع الحساب).',
-      s3: 'في إعدادات Business login الصق العناوين الثلاثة أدناه.', s4: 'انسخ معرّف تطبيق إنستغرام وسرّه إلى متغيرات Netlify ثم أعد النشر.', s5: 'إلى أن يجتاز التطبيق مراجعة Meta، لا يربط إلا الحسابات التي تضيفها كمختبِرين. أضف نفسك من Roles.',
-      redirect: 'عنوان إعادة التوجيه (OAuth redirect URI)', deauth: 'عنوان إلغاء التفويض', deletion: 'عنوان طلب حذف البيانات', envVars: 'متغيرات Netlify',
-      connectTitle: 'اربط حسابك على إنستغرام', connectSub: 'تسجل الدخول على instagram.com وتوافق على قراءة نبذتك ومنشوراتك فقط. لا ينشر براندورا نيابة عنك، ويمكنك الفصل في أي وقت.', connectBtn: 'اربط إنستغرام',
-      connected: 'تم ربط إنستغرام', disconnected: 'تم فصل إنستغرام', deleted: 'تم حذف بياناتك من إنستغرام', denied: 'أُلغي الربط على إنستغرام.', stateError: 'تعذّر التحقق من الربط. حاول مرة أخرى.',
-      loading: 'جارٍ قراءة حسابك…', followers: 'متابع', postsCount: 'منشور', refresh: 'تحديث', disconnect: 'فصل',
-      ideasTitle: 'أفكار المنشورات', ideasSub: 'ثلاث أفكار لمنشورات بصورة واحدة، مبنية على ما ينشره حسابك وما يحصد أكثر الإعجابات.', designWith: 'التصميم بعلامة', suggest: 'اقترح ٣ أفكار', again: 'اقترح أفكارًا جديدة',
-      analysis: 'ما نراه في حسابك', niche: 'المجال', tone: 'النبرة', audience: 'الجمهور', opportunity: 'فرصة', caption: 'النص المرافق', copy: 'نسخ',
-      note: 'راجع كل فكرة قبل النشر. العروض والأسعار وآراء العملاء نماذج مؤقتة إلى أن تستبدلها ببيانات حقيقية.',
     },
     dash: {
       title: 'علاماتك', sub: 'كل هوية تنشئها تُحفظ هنا.', newBrand: 'علامة جديدة',

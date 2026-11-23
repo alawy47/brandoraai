@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import Logo from '../brand/Logo';
-import { InstagramPost, InstagramStory } from '../social/SocialDesigns';
+import { SocialPost, SocialStory } from '../social/SocialDesigns';
 import { CardFront, CardBack, BoxMockup, BagMockup, ProductMockup } from '../mockups/Mockups';
 import { paletteMap, brandFonts } from '../../lib/brand';
 import { rgbString, cmykString, readableOn, withAlpha } from '../../lib/color';
@@ -148,10 +148,10 @@ const BrandBook = forwardRef(function BrandBook({ project, concept }, ref) {
       <Page {...common} n={6} title={l.contents[4]} bg={P.light} color={P.dark}>
         <div style={{ position: 'absolute', top: 175, insetInline: 56, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
           {concept.social.posts.map((post) => (
-            <Fixed key={post.type} w={540} h={540} scale={0.43}><InstagramPost project={project} concept={concept} post={post} /></Fixed>
+            <Fixed key={post.type} w={540} h={540} scale={0.43}><SocialPost project={project} concept={concept} post={post} /></Fixed>
           ))}
           {concept.social.stories.slice(0, 1).map((story) => (
-            <Fixed key={story.type} w={270} h={480} scale={0.86}><InstagramStory project={project} concept={concept} story={story} /></Fixed>
+            <Fixed key={story.type} w={270} h={480} scale={0.86}><SocialStory project={project} concept={concept} story={story} /></Fixed>
           ))}
         </div>
         <div style={{ position: 'absolute', top: 430, insetInlineStart: 56, width: 724, fontSize: 13.5, lineHeight: 1.6, opacity: 0.8 }}>

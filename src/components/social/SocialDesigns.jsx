@@ -19,7 +19,7 @@ function MarkOnly({ concept, name, variant, size, style }) {
 
 const base = (dir, f, extra) => ({ direction: dir, fontFamily: f.body, position: 'relative', overflow: 'hidden', width: '100%', height: '100%', ...extra });
 
-export function InstagramPost({ project, concept, post }) {
+export function SocialPost({ project, concept, post }) {
   useFontsReady(concept, project.input.name);
   const lang = project.input.language === 'ar' ? 'ar' : 'en';
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -119,7 +119,7 @@ export function InstagramPost({ project, concept, post }) {
   );
 }
 
-export function InstagramStory({ project, concept, story }) {
+export function SocialStory({ project, concept, story }) {
   useFontsReady(concept, project.input.name);
   const lang = project.input.language === 'ar' ? 'ar' : 'en';
   const dir = lang === 'ar' ? 'rtl' : 'ltr';

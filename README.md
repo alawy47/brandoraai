@@ -162,22 +162,6 @@ Without these variables, projects stay in the browser and the API accepts anonym
 | GET | `/api/fonts` | font catalogue |
 | GET | `/api/providers/status` | routing, usage, cache and job stats |
 
-## Instagram post ideas
-
-`/instagram` connects the user's own Instagram account through the official Instagram API with Instagram Login, reads the profile and the latest 12 posts (captions, likes, comments), asks the language model for three post ideas that fit the account, and designs the chosen idea as a square post in the colours, fonts and logo of any BRANDORA project. It cannot read other people's accounts; Instagram does not allow that without the owner's approval.
-
-How it works: the browser is sent to instagram.com, the owner approves read-only access (`instagram_business_basic`), and Instagram returns to `/api/instagram/callback`. The server exchanges the code for a 60-day token, refreshes it before it expires, and keeps it in Netlify Blobs. The browser only holds an opaque random connection id. Only the profile text and captions go to the language model, never the token. The callback state is random and single-use, and Meta's deauthorize and data-deletion callbacks are verified with the app secret and remove the stored connection.
-
-Setup (once):
-
-1. developers.facebook.com → create an app (type Business) → add the product Instagram → API setup with Instagram login.
-2. The Instagram account must be Business or Creator.
-3. Register the three URLs shown on the `/instagram` page (OAuth redirect URI, deauthorize callback, data deletion request).
-4. Netlify environment variables: `INSTAGRAM_APP_ID` and `INSTAGRAM_APP_SECRET` (secret). Optional: `INSTAGRAM_API_VERSION`, `SITE_URL` if you use a custom domain.
-5. Redeploy. Until the app passes Meta's app review, only accounts added under Roles can connect.
-
-This code follows Instagram's documented flow but has only been run against a simulation of Instagram's endpoints. Connect one real account after deploying to confirm field names and permissions, because Meta changes API versions.
-
 ## Deployment
 
 ### Everything on Netlify (recommended)
@@ -212,7 +196,6 @@ The tests cover fallback, retry with backoff, rate-limit cooldown, caching and i
 
 ## Known limits
 
-- The Instagram connection has only run against a simulation of Instagram's API, and needs a real Meta app to confirm. Meta app review is required before other people can connect their accounts.
 - The Netlify Functions run in this repository's tests and a Netlify-like harness, and the function bundles build with esbuild, but they have not run on Netlify itself yet. Check `/settings` and one generation after your first deploy.
 - The live provider calls have been tested against stubs, not the real OpenAI, Gemini or Anthropic APIs, and the Supabase sync has not been run against a real project. Run one generation, one image request and one sign-in with real credentials before launch.
 - Default model names change over time; set the `*_MODEL` variables to the models on your accounts.

@@ -35,7 +35,7 @@ export default function Navbar() {
 
   const links = landing
     ? [['#features', t('nav.features')], ['#how', t('nav.how')], ['#showcase', t('nav.showcase')]]
-    : [['/dashboard', t('nav.dashboard')], ['/create', t('nav.create')], ['/instagram', t('nav.instagram')], ['/settings', t('nav.settings')]];
+    : [['/dashboard', t('nav.dashboard')], ['/create', t('nav.create')], ['/settings', t('nav.settings')]];
 
   const linkCls = 'rounded-lg px-3 py-2 text-sm text-mute transition-colors hover:text-paper';
   const renderLink = ([href, label]) => href.startsWith('#')

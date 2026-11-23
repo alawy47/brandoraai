@@ -6,7 +6,7 @@ import Button from '../components/ui/Button';
 import Logo from '../components/brand/Logo';
 import PaletteStrip from '../components/brand/PaletteStrip';
 import ScaledFrame from '../components/social/ScaledFrame';
-import { InstagramPost, InstagramStory } from '../components/social/SocialDesigns';
+import { SocialPost, SocialStory } from '../components/social/SocialDesigns';
 import { BoxMockup, CardFront } from '../components/mockups/Mockups';
 import { Background, COVERS, CoverDesign } from '../components/brand/BrandKit';
 import { BG_STYLES } from '../lib/backgrounds';
@@ -171,8 +171,8 @@ export default function Landing() {
           </Deliverable>
           <Deliverable className="md:col-span-2" title={t('landing.d3')} sub={t('landing.d3s')}>
             <div className="grid grid-cols-[1.6fr_1fr] gap-2">
-              <ScaledFrame width={540} height={540} className="rounded-lg"><InstagramPost project={hero} concept={hc} post={hc.social.posts[0]} /></ScaledFrame>
-              <ScaledFrame width={270} height={480} className="rounded-lg"><InstagramStory project={hero} concept={hc} story={hc.social.stories[0]} /></ScaledFrame>
+              <ScaledFrame width={540} height={540} className="rounded-lg"><SocialPost project={hero} concept={hc} post={hc.social.posts[0]} /></ScaledFrame>
+              <ScaledFrame width={270} height={480} className="rounded-lg"><SocialStory project={hero} concept={hc} story={hc.social.stories[0]} /></ScaledFrame>
             </div>
           </Deliverable>
           <Deliverable className="md:col-span-2" title={t('landing.d4')} sub={t('landing.d4s')}>

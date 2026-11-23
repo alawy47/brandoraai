@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import ScaledFrame from '../../components/social/ScaledFrame';
-import { FlipCard, CardFront, CardBack, BoxMockup, BagMockup, ProductMockup, MockupStage, TeeMockup, CapMockup, StorefrontMockup, LetterheadMockup, WebsiteHeaderMockup, InstagramProfileMockup } from '../../components/mockups/Mockups';
+import { FlipCard, CardFront, CardBack, BoxMockup, BagMockup, ProductMockup, MockupStage, TeeMockup, CapMockup, StorefrontMockup, LetterheadMockup, WebsiteHeaderMockup, SocialProfileMockup } from '../../components/mockups/Mockups';
 import { Background } from '../../components/brand/BrandKit';
 import { BG_STYLES } from '../../lib/backgrounds';
 import { generateMockupPhoto } from '../../services/ai';
@@ -110,7 +110,7 @@ export default function MockupsTab({ project, concept }) {
             <div ref={ig} className="flex justify-center bg-surface p-4">
               <div className="w-full max-w-[330px] overflow-hidden rounded-[22px] shadow-2xl ring-1 ring-black/10">
                 <ScaledFrame width={390} height={760}>
-                  <InstagramProfileMockup project={project} concept={concept} tiles={BG_STYLES.slice(0, 9).map((b) => <Background key={b.id} styleId={b.id} concept={concept} name={project.input.name} w={130} h={130} style={{ aspectRatio: '1' }} />)} />
+                  <SocialProfileMockup project={project} concept={concept} tiles={BG_STYLES.slice(0, 9).map((b) => <Background key={b.id} styleId={b.id} concept={concept} name={project.input.name} w={130} h={130} style={{ aspectRatio: '1' }} />)} />
                 </ScaledFrame>
               </div>
             </div>

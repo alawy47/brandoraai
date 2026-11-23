@@ -258,8 +258,8 @@ export function WebsiteHeaderMockup({ project, concept }) {
   );
 }
 
-/* Instagram profile page: avatar, bio, highlights and a grid of brand tiles */
-export function InstagramProfileMockup({ project, concept, tiles }) {
+/* Social profile page: avatar, bio, highlights and a grid of brand tiles */
+export function SocialProfileMockup({ project, concept, tiles }) {
   useFontsReady(concept, project.input.name);
   const P = paletteMap(concept);
   const lang = project.input.language === 'ar' ? 'ar' : 'en';
