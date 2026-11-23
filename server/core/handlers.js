@@ -3,6 +3,10 @@
 import { BrandResult, LogoList, LogoPatch, BriefInput, IgIdeas, IgInput } from '../lib/schemas.js';
 import { SYSTEM, brandPrompt, directionsPrompt, refinePrompt, mockupPrompt, symbolPrompt, igPrompt } from '../lib/prompts.js';
 
+// Anthropic's SDK refuses non-streaming requests that could run past 10 minutes (about 21,000 output tokens or more),
+// so keep every request below that.
+export const BRAND_MAX_TOKENS = 16000;
+
 export class InputError extends Error { constructor(m) { super(m); this.status = 400; } }
 
 const HEX = /^#[0-9A-F]{6}$/i;
@@ -33,7 +37,7 @@ export function createHandlers(registry) {
       if (!parsed.success) throw new InputError('The brief is missing a name, category or personality.');
       const input = parsed.data;
       progress(0.1);
-      const out = await registry.run('text', { system: SYSTEM, prompt: brandPrompt(input), schema: BrandResult, maxTokens: 24000 }, { cacheable: true });
+      const out = await registry.run('text', { system: SYSTEM, prompt: brandPrompt(input), schema: BrandResult, maxTokens: BRAND_MAX_TOKENS }, { cacheable: true });
       progress(0.95);
       return { seed: Date.now(), brief: out.data.brief, concepts: out.data.concepts.slice(0, 3).map((c) => finishConcept(c, input)), provider: out.provider };
     },

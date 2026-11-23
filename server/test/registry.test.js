@@ -112,3 +112,12 @@ test('Potrace vectorises a real logo PNG into SVG path data', async () => {
   assert.ok(out.d.length > 100);
   assert.match(out.svg, /^<svg[^>]+viewBox="[\d. ]+"><path d="/);
 });
+
+test('Anthropic provider: brand-sized requests pass the SDK non-streaming guard', async () => {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+  const { BRAND_MAX_TOKENS } = await import('../core/handlers.js');
+  const client = new Anthropic({ apiKey: 'k', maxRetries: 0, fetch: async () => new Response(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'x' } }), { status: 401 }) });
+  const ask = async (max_tokens) => client.messages.create({ model: 'claude-opus-5-5', max_tokens, messages: [{ role: 'user', content: 'hi' }] });
+  await assert.rejects(ask(BRAND_MAX_TOKENS), (e) => !/Streaming is required/.test(e.message)); // reaches the network, which answers 401
+  await assert.rejects(ask(32000), /Streaming is required/); // documents why the limit exists
+});

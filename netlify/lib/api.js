@@ -157,16 +157,22 @@ export async function runJob({ jobId, token }, deps) {
 
   job.status = 'running'; job.startedAt = Date.now(); delete job.token;
   await store.set(jobId, job);
-  let last = 0;
-  const progress = (n) => { if (Date.now() - last < 1500) return; last = Date.now(); store.set(jobId, { ...job, progress: n }).catch(() => {}); };
+  // All writes go through one queue and the final write waits for it. Otherwise a slow progress write
+  // can land after the result and turn a finished job back into "running".
+  let queue = Promise.resolve(), finished = false, last = 0;
+  const write = (v) => { queue = queue.then(() => store.set(jobId, v)).catch(() => {}); return queue; };
+  const progress = (n) => { if (finished || Date.now() - last < 1500) return; last = Date.now(); write({ ...job, progress: n }); };
+  let final;
   try {
     const result = await handlers[job.type](job.payload, progress);
-    await store.set(jobId, { ...publicJob(job), owner: job.owner, status: 'done', progress: 1, result, finishedAt: Date.now() });
+    final = { ...publicJob(job), owner: job.owner, status: 'done', progress: 1, result, finishedAt: Date.now() };
   } catch (e) {
     console.error(e.message);
-    await store.set(jobId, { ...publicJob(job), owner: job.owner, status: 'failed', error: publicError(e), finishedAt: Date.now() });
-  } finally {
-    await Promise.allSettled(pending);
+    final = { ...publicJob(job), owner: job.owner, status: 'failed', error: publicError(e), finishedAt: Date.now() };
   }
+  finished = true;
+  await queue;
+  await store.set(jobId, final);
+  await Promise.allSettled(pending);
   return { ok: true };
 }

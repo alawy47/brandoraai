@@ -106,3 +106,16 @@ test('health, fonts and unknown paths; both URL forms are accepted', async () =>
   assert.deepEqual(await (await handleApi(call('/.netlify/functions/api/health'), deps)).json(), { ok: true });
   assert.equal((await handleApi(call('/api/nope'), deps)).status, 404);
 });
+
+test('a slow progress write can never overwrite the finished result', async () => {
+  const base = memoryStores();
+  // Progress writes (status running, progress > 0) are slow; every other write is instant. Without ordering, they land last.
+  const stores = (name) => { const st = base(name); return { ...st, set: async (k, v) => { if (name === 'jobs' && v.status === 'running' && v.progress > 0) await new Promise((r) => setTimeout(r, 60)); return st.set(k, v); } }; };
+  const handler = async (i, progress) => { progress?.(0.5); return { data: { ...brandData }, usage: {} }; };
+  const { triggered, deps } = setup(handler, { stores });
+  const { jobId } = await (await handleApi(call('/api/jobs', { method: 'POST', body: { type: 'brand', input } }), deps)).json();
+  await runJob(triggered[0], deps);
+  await new Promise((r) => setTimeout(r, 150)); // let any stray slow write land
+  const poll = await (await handleApi(call(`/api/jobs/${jobId}`), deps)).json();
+  assert.equal(poll.status, 'done'); assert.equal(poll.result.concepts.length, 3);
+});
