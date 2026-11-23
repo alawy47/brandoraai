@@ -5,6 +5,7 @@ export const PRICES = {
   anthropic: { inputPerMTok: num(process.env.PRICE_ANTHROPIC_INPUT_MTOK) ?? 4, outputPerMTok: num(process.env.PRICE_ANTHROPIC_OUTPUT_MTOK) ?? 20 },
   openai: { inputPerMTok: num(process.env.PRICE_OPENAI_INPUT_MTOK), outputPerMTok: num(process.env.PRICE_OPENAI_OUTPUT_MTOK), perImage: num(process.env.PRICE_OPENAI_IMAGE) },
   gemini: { inputPerMTok: num(process.env.PRICE_GEMINI_INPUT_MTOK), outputPerMTok: num(process.env.PRICE_GEMINI_OUTPUT_MTOK), perImage: num(process.env.PRICE_GEMINI_IMAGE) },
+  cloudflare: { perImage: 0 },
   vectorizer: { perImage: num(process.env.PRICE_VECTORIZER_IMAGE) },
   potrace: { perImage: 0 },
   googlefonts: { perImage: 0 },

@@ -7,7 +7,7 @@ import { useBackend } from '../services/useBackend';
 const TASKS = ['text', 'image', 'edit', 'vector', 'fonts'];
 const ENV = [
   ['VITE_API_URL', 'build-time, not secret: /'],
-  ['ANTHROPIC_API_KEY', 'text (Claude)'], ['GEMINI_API_KEY', 'text fallback · image · edit (Gemini)'], ['OPENAI_API_KEY', 'optional extra provider'],
+  ['ANTHROPIC_API_KEY', 'text (Claude)'], ['GEMINI_API_KEY', 'text fallback · image · edit (Gemini)'], ['OPENAI_API_KEY', 'optional extra provider'], ['CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN', 'free image drawing (FLUX)'],
   ['VECTORIZER_API_ID / VECTORIZER_API_SECRET', 'vector'], ['GOOGLE_FONTS_API_KEY', 'fonts'],
   ['TEXT_PROVIDERS, IMAGE_PROVIDERS, EDIT_PROVIDERS, VECTOR_PROVIDERS', 'routing order'], ['PRICE_*', 'cost estimates'],
 ];

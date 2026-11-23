@@ -125,6 +125,7 @@ VITE_API_URL=http://localhost:8787
 |---|---|
 | `ANTHROPIC_API_KEY`, `CLAUDE_MODEL` | Claude for text tasks (default `claude-opus-5-5`) |
 | `OPENAI_API_KEY`, `OPENAI_TEXT_MODEL`, `OPENAI_IMAGE_MODEL`, `OPENAI_BASE_URL` | OpenAI text, images and edits (defaults `gpt-4.1`, `gpt-image-1`; set the models on your account) |
+| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Free image drawing with FLUX (symbol explorations). Used after Gemini; it cannot edit a reference image, so photo mockups still need Gemini or OpenAI |
 | `GEMINI_API_KEY`, `GEMINI_TEXT_MODEL`, `GEMINI_IMAGE_MODEL` | Gemini text, images and edits (defaults `gemini-3.5-flash`, `gemini-3.1-flash-image`; the free tier covers text only, images need billing on the Google project) |
 | `VECTORIZER_API_ID`, `VECTORIZER_API_SECRET`, `VECTORIZER_MODE` | Vectorizer.AI (`test` mode is free for development) |
 | `GOOGLE_FONTS_API_KEY` | font discovery from the full Google Fonts catalogue |

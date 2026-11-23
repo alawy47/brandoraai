@@ -151,3 +151,25 @@ test('refine returns only the fields that changed, mapped onto valid values', as
   const r = await createHandlers(registry).refine({ input: { name: 'Dar Qahwa' }, logo, request: 'uppercase, wider, gold' });
   assert.deepEqual(r.patch, { case: 'upper', tracking: 0.2, colorway: 'accent', rationale: 'new' });
 });
+
+test('cloudflare draws the image when Gemini is over quota, at zero cost', async () => {
+  const { buildRegistry } = await import('../core/setup.js');
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    calls.push(String(url));
+    if (String(url).includes('generativelanguage')) return new Response(JSON.stringify({ error: { code: 429, message: 'You exceeded your current quota' } }), { status: 429, headers: { 'content-type': 'application/json' } });
+    assert.match(init.headers.Authorization, /^Bearer cf-token$/);
+    return new Response(JSON.stringify({ success: true, result: { image: 'QUJD' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  try {
+    const reg = buildRegistry({ GEMINI_API_KEY: 'g', CLOUDFLARE_ACCOUNT_ID: 'acct', CLOUDFLARE_API_TOKEN: 'cf-token', PROVIDER_RETRIES: '0' });
+    assert.deepEqual(reg.available('image'), ['gemini', 'cloudflare']);
+    assert.deepEqual(reg.available('edit'), ['gemini'], 'cloudflare cannot edit a reference image');
+    const out = await reg.run('image', { prompt: 'a flat coffee symbol' });
+    assert.equal(out.provider, 'cloudflare');
+    assert.equal(out.image.b64, 'QUJD');
+    assert.ok(calls.some((u) => u.includes('/accounts/acct/ai/run/@cf/black-forest-labs/flux-1-schnell')));
+    assert.equal(reg.usage.summary().cloudflare.costUsd, 0);
+  } finally { globalThis.fetch = realFetch; }
+});
