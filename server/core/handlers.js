@@ -50,7 +50,10 @@ export function createHandlers(registry) {
     async refine({ input, logo, request }) {
       if (!input?.name || !logo || !request?.trim()) throw new InputError('Send the brief, the logo and what to change.');
       const out = await registry.run('text', { system: SYSTEM, prompt: refinePrompt(input, logo, request.slice(0, 500)), schema: LogoPatch, maxTokens: 3000, effort: 'low' });
-      return { ...out.data, patch: normalizeLogo(out.data.patch, true), provider: out.provider };
+      // The model returns the whole updated logo (it skips fields in partial patches); send only what changed.
+      const next = normalizeLogo(out.data.logo, false, logo);
+      const patch = Object.fromEntries(Object.entries(next).filter(([key, v]) => key !== 'id' && v !== logo[key]));
+      return { patch, applied: out.data.applied, note: out.data.note, provider: out.provider };
     },
     /** Image model draws a flat symbol, then it is vectorised into one clean SVG path. */
     async symbol({ input, idea, direction }) {

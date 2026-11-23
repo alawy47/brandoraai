@@ -49,7 +49,7 @@ ${JSON.stringify(logo)}
 
 The client asks: "${request}"
 
-Return only the fields to change. Keep everything else. If the request cannot be done with these controls, change nothing and explain in the note.`;
+Return the complete logo configuration after the change. Change every field the request needs (for example "uppercase" means case "upper", "gold" or "accent colour" means colorway "accent", "wider spacing" means a larger tracking), and copy all other fields unchanged. List each change in "applied". If the request cannot be done with these controls, return the logo unchanged and explain in the note.`;
 
 const SCENES = {
   storefront: 'the shopfront of a boutique on a sunny street in Dubai, the logo on the fascia sign and the glass door',

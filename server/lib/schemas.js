@@ -45,7 +45,7 @@ const Concept = z.object({
 export const BrandResult = z.object({ brief: Brief, concepts: z.array(Concept).describe('exactly 3: signature, contrast, expressive') });
 export const LogoList = z.object({ logos: z.array(LogoConfig) });
 export const LogoPatch = z.object({
-  patch: LogoConfig.partial().describe('only the fields that should change'),
+  logo: LogoConfig.describe('the complete logo after the change: copy every field that should stay the same'),
   applied: z.array(z.string()).describe('each change in a few words, in the language of the request'),
   note: z.string().describe('one sentence of design reasoning'),
 });
@@ -55,10 +55,11 @@ const findLatin = lookup(LATIN), findArabic = lookup(ARABIC), findMark = lookup(
 const DEFAULTS = { style: 'minimal', mark: 'monogram-circle', layout: 'horizontal', font: LATIN.includes('Inter') ? 'Inter' : LATIN[0], fontAr: ARABIC.includes('IBM Plex Sans Arabic') ? 'IBM Plex Sans Arabic' : ARABIC[0] };
 const clamp = (n, lo, hi, d) => (Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d);
 
-/** Maps model output onto values the app can render. With partial = true, missing fields stay missing. */
-export function normalizeLogo(l = {}, partial = false) {
+/** Maps model output onto values the app can render. With partial = true, missing fields stay missing;
+ *  unknown ids fall back to `fallback` (e.g. the current logo), then to defaults. */
+export function normalizeLogo(l = {}, partial = false, fallback = {}) {
   const out = { ...l };
-  const fix = (k, find) => { if (k in l || !partial) out[k] = find(l[k]) ?? DEFAULTS[k]; };
+  const fix = (k, find) => { if (k in l || !partial) out[k] = find(l[k]) ?? find(fallback[k]) ?? DEFAULTS[k]; };
   fix('style', findStyle); fix('mark', findMark); fix('layout', findLayout); fix('font', findLatin); fix('fontAr', findArabic);
   if ('weight' in l || !partial) out.weight = Math.round(clamp(Number(l.weight), 100, 900, 600) / 100) * 100;
   if ('tracking' in l || !partial) out.tracking = clamp(Number(l.tracking), -0.05, 0.45, 0);

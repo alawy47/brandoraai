@@ -143,3 +143,11 @@ test('anthropic falls back to JSON in the prompt when the structured-output gram
     assert.equal(bodies.length, 3, 'the second call skips the strict attempt');
   } finally { globalThis.fetch = realFetch; }
 });
+
+test('refine returns only the fields that changed, mapped onto valid values', async () => {
+  const { createHandlers } = await import('../core/handlers.js');
+  const logo = { style: 'minimal', mark: 'arch', layout: 'horizontal', font: 'Fraunces', fontAr: 'Amiri', weight: 600, case: 'asis', tracking: 0, colorway: 'primary', rationale: 'old' };
+  const registry = { run: async () => ({ provider: 'fake', data: { logo: { ...logo, case: 'upper', tracking: 0.2, colorway: 'accent', mark: 'not-a-mark', rationale: 'new' }, applied: ['Uppercase'], note: 'n' } }) };
+  const r = await createHandlers(registry).refine({ input: { name: 'Dar Qahwa' }, logo, request: 'uppercase, wider, gold' });
+  assert.deepEqual(r.patch, { case: 'upper', tracking: 0.2, colorway: 'accent', rationale: 'new' });
+});

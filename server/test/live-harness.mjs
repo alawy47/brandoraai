@@ -22,7 +22,7 @@ globalThis.fetch = async (url, init) => {
     const sys = JSON.parse(init.body).messages[0].content;
     let content;
     if (sys.includes('"brief"')) content = { brief: { objective: 'AI objective for the test.', insight: 'AI insight.', positioning: 'AI positioning.', personality: ['Warm', 'Crafted', 'Calm'], cues: ['c1', 'c2'], avoid: ['a1'], deliverables: ['d1'] }, concepts: [concept('signature', 'AI Signature', 'vintage', 'cup', 'badge'), concept('contrast', 'AI Contrast', 'luxury', 'crown', 'crest'), concept('expressive', 'AI Expressive', 'geometric', 'mosaic', 'horizontal')] };
-    else if (sys.includes('"patch"')) content = { patch: { weight: 800, layout: 'stacked' }, applied: ['Heavier (AI)', 'Vertical (AI)'], note: 'Stacking suits the narrow sign.' };
+    else if (sys.includes('"applied"')) content = { logo: { style: 'minimal', mark: 'arch', layout: 'stacked', font: 'Fraunces', fontAr: 'Amiri', weight: 800, case: 'asis', tracking: 0, colorway: 'primary', rationale: 'r' }, applied: ['Heavier (AI)', 'Vertical (AI)'], note: 'Stacking suits the narrow sign.' };
     else content = { logos: [logo('minimal', 'leaf', 'horizontal'), logo('minimal', 'drop', 'stacked')] };
     return new Response(JSON.stringify({ model: 'stub', choices: [{ message: { content: JSON.stringify(content) } }], usage: { prompt_tokens: 1000, completion_tokens: 500 } }));
   }
