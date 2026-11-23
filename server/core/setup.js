@@ -1,3 +1,5 @@
+// Default routing: Claude for strategy and copy (Gemini as the fallback), Gemini for images and edits.
+// OpenAI is still supported: add it with TEXT_PROVIDERS / IMAGE_PROVIDERS / EDIT_PROVIDERS.
 // Builds the provider registry from environment variables. Shared by the Express server
 // and the Netlify functions so both route, retry and fall back the same way.
 import { ProviderRegistry } from './registry.js';
@@ -16,9 +18,9 @@ export function buildRegistry(env = process.env, { sink, overrides = {} } = {}) 
     vectorizer: vectorizerProvider(env), potrace: potraceProvider(), googlefonts: googleFontsProvider(env), ...overrides,
   };
   const order = {
-    text: list(env.TEXT_PROVIDERS, ['anthropic', 'openai', 'gemini']),
-    image: list(env.IMAGE_PROVIDERS, ['openai', 'gemini']),
-    edit: list(env.EDIT_PROVIDERS, ['openai', 'gemini']),
+    text: list(env.TEXT_PROVIDERS, ['anthropic', 'gemini']),
+    image: list(env.IMAGE_PROVIDERS, ['gemini']),
+    edit: list(env.EDIT_PROVIDERS, ['gemini']),
     vector: list(env.VECTOR_PROVIDERS, ['vectorizer', 'potrace']),
     fonts: ['googlefonts'],
   };

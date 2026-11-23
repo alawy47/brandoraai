@@ -2,7 +2,7 @@
 // so the frontend's live path (jobs, brief, refine, symbol + vectorise, status) can be exercised without keys.
 import { readFileSync } from 'node:fs';
 process.env.OPENAI_API_KEY = 'test-key';
-process.env.TEXT_PROVIDERS = 'openai';
+process.env.TEXT_PROVIDERS = 'openai'; process.env.IMAGE_PROVIDERS = 'openai'; process.env.EDIT_PROVIDERS = 'openai'; // the harness stubs OpenAI's HTTP only
 const png = readFileSync(process.env.TEST_PNG || new URL('./fixtures/logo-icon.png', import.meta.url)).toString('base64');
 const realFetch = globalThis.fetch;
 const logo = (style, mark, layout) => ({ style, mark, layout, font: 'Cinzel', fontAr: 'Amiri', weight: 600, case: 'upper', tracking: 0.2, colorway: 'primary', rationale: 'A test rationale.' });

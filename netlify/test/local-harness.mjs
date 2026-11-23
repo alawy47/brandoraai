@@ -7,7 +7,7 @@ import { join, extname } from 'node:path';
 import { handleApi, runJob, memoryStores } from '../lib/api.js';
 
 process.env.OPENAI_API_KEY = 'test-key';
-process.env.TEXT_PROVIDERS = 'openai';
+process.env.TEXT_PROVIDERS = 'openai'; process.env.IMAGE_PROVIDERS = 'openai'; process.env.EDIT_PROVIDERS = 'openai'; // the harness stubs OpenAI's HTTP only
 process.env.INSTAGRAM_APP_ID = 'APP'; process.env.INSTAGRAM_APP_SECRET = 'SECRET';
 const png = readFileSync(new URL('../../server/test/fixtures/logo-icon.png', import.meta.url)).toString('base64');
 const realFetch = globalThis.fetch;

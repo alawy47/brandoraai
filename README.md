@@ -87,13 +87,13 @@ supabase/schema.sql          projects, api_usage, storage bucket, row-level secu
 
 | Task | Used for | Providers (default order) |
 |---|---|---|
-| `text` | brief, concepts, logo directions, refinements | Claude (`claude-opus-5-5`), OpenAI, Gemini |
-| `image` | custom symbol drawings | OpenAI, Gemini |
-| `edit` | photo mockups using the real logo as reference, image edits | OpenAI, Gemini |
+| `text` | brief, concepts, logo directions, refinements | Claude (`claude-opus-5-5`), then Gemini |
+| `image` | custom symbol drawings | Gemini |
+| `edit` | photo mockups using the real logo as reference, image edits | Gemini |
 | `vector` | raster → clean SVG paths | Vectorizer.AI, Potrace (local, no key) |
 | `fonts` | font discovery | Google Fonts API, curated library |
 
-Only providers with keys are used. Change the order with `TEXT_PROVIDERS`, `IMAGE_PROVIDERS`, `EDIT_PROVIDERS` and `VECTOR_PROVIDERS`. Each call is retried on 408/429/5xx and network errors with exponential backoff (honouring `retry-after`), then passed to the next provider. A provider that returns a long rate limit is skipped until it expires. Identical cacheable requests (brand generation, vectorising, fonts) are served from cache, and concurrent duplicates share one call. Claude uses structured outputs and server-side refusal fallbacks; OpenAI and Gemini use JSON mode, with every response validated against the same Zod schema.
+Only providers with keys are used. OpenAI is supported but off by default; add it with `TEXT_PROVIDERS=anthropic,gemini,openai` (and the image variables) if you want it. Change the order with `TEXT_PROVIDERS`, `IMAGE_PROVIDERS`, `EDIT_PROVIDERS` and `VECTOR_PROVIDERS`. Each call is retried on 408/429/5xx and network errors with exponential backoff (honouring `retry-after`), then passed to the next provider. A provider that returns a long rate limit is skipped until it expires. Identical cacheable requests (brand generation, vectorising, fonts) are served from cache, and concurrent duplicates share one call. Claude uses structured outputs and server-side refusal fallbacks; OpenAI and Gemini use JSON mode, with every response validated against the same Zod schema.
 
 `/settings` in the app shows routing, calls, failures, average latency and estimated cost per provider.
 
@@ -191,7 +191,7 @@ Steps:
 
 1. Put the project in a GitHub repository (Netlify must build it; drag-and-drop uploads do not install dependencies or build functions).
 2. Netlify → Add new site → Import an existing project → GitHub. Settings are read from `netlify.toml`.
-3. Site configuration → Environment variables. Add at least one text key (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) and tick "Contains secret values". Optional: `GEMINI_API_KEY`, `VECTORIZER_API_ID`/`VECTORIZER_API_SECRET`, `SUPABASE_*`, `*_MODEL`, `TEXT_PROVIDERS`…
+3. Site configuration → Environment variables. Add `ANTHROPIC_API_KEY` and `GEMINI_API_KEY` and tick "Contains secret values". Optional: `GEMINI_API_KEY`, `VECTORIZER_API_ID`/`VECTORIZER_API_SECRET`, `SUPABASE_*`, `*_MODEL`, `TEXT_PROVIDERS`…
 4. Deploys → Trigger deploy → Clear cache and deploy site.
 5. Open `/settings`. It shows Connected and the providers that have keys. Until a key exists the app says so and uses the sample engine.
 

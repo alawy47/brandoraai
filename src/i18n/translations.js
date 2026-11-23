@@ -133,7 +133,7 @@ export const translations = {
     settings: {
       checking: 'Checking the API…',
  noKeysTitle: 'API connected, but no AI keys are set', noKeysSub: 'Add at least one provider key (below) and redeploy. Until then the app uses the sample engine.', unreachableTitle: 'The API could not be reached',
-      netlifyTitle: 'On Netlify (everything on one site)', n1: 'In Netlify open your site, then Site configuration → Environment variables.', n2: 'Add at least one text provider key, for example ANTHROPIC_API_KEY or OPENAI_API_KEY. Tick “Contains secret values”.',
+      netlifyTitle: 'On Netlify (everything on one site)', n1: 'In Netlify open your site, then Site configuration → Environment variables.', n2: 'Add at least one text provider key, ANTHROPIC_API_KEY (Claude) and GEMINI_API_KEY (Gemini, also used for images and photo mockups). Tick “Contains secret values”.',
       n3: 'Add VITE_API_URL with the value / (a single slash). This is not secret, so leave “Contains secret values” unticked.', n4: 'Deploys → Trigger deploy → Clear cache and deploy site.', n5: 'Open this page again and press Refresh. It should say Connected, and list the providers with keys.',
       otherTitle: 'Another host (Render, Railway, your own server)', otherSub: 'Run the server folder anywhere and set VITE_API_URL to its address. Set CORS_ORIGIN on the server to your site address.',
       title: 'AI providers', sub: 'BRANDORA routes each task to the best configured provider, retries transient failures and falls back to the next provider. Keys live on the server only.',
@@ -148,7 +148,7 @@ export const translations = {
     },
     ig: {
       title: 'Instagram post ideas', sub: 'Connect your Instagram account. BRANDORA reads your profile and recent captions, suggests three post ideas that fit your account, and designs the one you pick in your brand colours.',
-      needsApi: 'This feature needs the BRANDORA API (Netlify Functions or a server).', needsText: 'Ideas need a language model key (Anthropic, OpenAI or Gemini).',
+      needsApi: 'This feature needs the BRANDORA API (Netlify Functions or a server).', needsText: 'Ideas need a language model key (Anthropic Claude or Google Gemini).',
       setupTitle: 'Set up Instagram once', setupSub: 'Instagram only lets accounts be read after their owner approves, so the site needs a free Meta app. This takes about ten minutes, plus Meta review before other people can connect.',
       s1: 'Open developers.facebook.com and create an app (type Business). Add the product “Instagram” → “API setup with Instagram login”.', s2: 'Your Instagram account must be a Business or Creator account (free; Settings → Account type).',
       s3: 'Under Business login settings, paste the three addresses below.', s4: 'Copy the Instagram app ID and secret into Netlify environment variables, then redeploy.', s5: 'Until the app passes Meta review, only accounts you add as testers can connect. Add yourself under Roles.',
@@ -249,7 +249,7 @@ export const translations = {
         photoTitle: 'نموذج واقعي بالصور', photoSub: 'يضع نموذج الصور هويتك في مشهد حقيقي. تُولَّد كل صورة مباشرة وتكلّف طلب صورة واحد.',
         scene_storefront: 'واجهة متجر', scene_packaging: 'تغليف', scene_apparel: 'ملابس', 'scene_coffee-cup': 'كوب سفري', scene_office: 'جدار مكتب', scene_billboard: 'لوحة إعلانية',
         photoBtn: 'ولّد نموذجًا واقعيًا', photoReady: 'اختر مشهدًا وولّده. تبقى النماذج المتجهية أعلاه المرجع للطباعة.',
-        photoOffline: 'تحتاج النماذج الواقعية إلى مزود صور (OpenAI أو Google Gemini). النماذج المتجهية في هذه الصفحة تعمل بدونه.', connect: 'إعداد مزودي الذكاء الاصطناعي', madeWith: 'وُلّد باستخدام',
+        photoOffline: 'تحتاج النماذج الواقعية إلى مفتاح Google Gemini. النماذج المتجهية في هذه الصفحة تعمل بدونه.', connect: 'إعداد مزودي الذكاء الاصطناعي', madeWith: 'وُلّد باستخدام',
       },
       ty: {
         paletteSub: 'اضغط على أي لون لتغييره. تتحدّث الشعارات والمنشورات والنماذج والدليل معًا. نزّل العينات لبرامج التصميم.',
@@ -305,7 +305,7 @@ export const translations = {
     },
     settings: {
       checking: 'جارٍ فحص الخادم…', noKeysTitle: 'الخادم متصل، لكن لا توجد مفاتيح ذكاء اصطناعي', noKeysSub: 'أضف مفتاح مزود واحدًا على الأقل (أدناه) ثم أعد النشر. إلى ذلك الحين يستخدم التطبيق المحرك التجريبي.', unreachableTitle: 'تعذّر الوصول إلى الخادم',
-      netlifyTitle: 'على Netlify (كل شيء في موقع واحد)', n1: 'في Netlify افتح موقعك، ثم Site configuration ← Environment variables.', n2: 'أضف مفتاح مزود نصوص واحدًا على الأقل، مثل ANTHROPIC_API_KEY أو OPENAI_API_KEY، وفعّل خيار “Contains secret values”.',
+      netlifyTitle: 'على Netlify (كل شيء في موقع واحد)', n1: 'في Netlify افتح موقعك، ثم Site configuration ← Environment variables.', n2: 'أضف مفتاح مزود نصوص واحدًا على الأقل، ANTHROPIC_API_KEY (Claude) وGEMINI_API_KEY (Gemini، ويُستخدم أيضًا للصور والنماذج الواقعية)، وفعّل خيار “Contains secret values”.',
       n3: 'أضف VITE_API_URL بالقيمة / (شرطة مائلة واحدة). هذا ليس سريًا، فاترك خيار “Contains secret values” بدون علامة.', n4: 'Deploys ← Trigger deploy ← Clear cache and deploy site.', n5: 'افتح هذه الصفحة مرة أخرى واضغط تحديث. يجب أن تظهر “متصل” مع المزودين الذين لديهم مفاتيح.',
       otherTitle: 'استضافة أخرى (Render أو Railway أو خادمك)', otherSub: 'شغّل مجلد server في أي مكان واجعل VITE_API_URL عنوانه. واضبط CORS_ORIGIN في الخادم على عنوان موقعك.',
       title: 'مزودو الذكاء الاصطناعي', sub: 'يوجّه براندورا كل مهمة إلى أفضل مزود مُعدّ، ويعيد المحاولة عند الأعطال المؤقتة، وينتقل إلى المزود التالي عند الفشل. المفاتيح على الخادم فقط.',
@@ -320,7 +320,7 @@ export const translations = {
     },
     ig: {
       title: 'أفكار منشورات إنستغرام', sub: 'اربط حسابك على إنستغرام. يقرأ براندورا نبذتك وآخر نصوص منشوراتك، ويقترح ثلاث أفكار تناسب حسابك، ثم يصمم الفكرة التي تختارها بألوان علامتك.',
-      needsApi: 'هذه الميزة تحتاج خادم براندورا (دوال Netlify أو خادمًا).', needsText: 'الأفكار تحتاج مفتاح نموذج لغوي (Anthropic أو OpenAI أو Gemini).',
+      needsApi: 'هذه الميزة تحتاج خادم براندورا (دوال Netlify أو خادمًا).', needsText: 'الأفكار تحتاج مفتاح نموذج لغوي (Anthropic Claude أو Google Gemini).',
       setupTitle: 'إعداد إنستغرام مرة واحدة', setupSub: 'لا يسمح إنستغرام بقراءة الحساب إلا بعد موافقة صاحبه، لذلك يحتاج الموقع تطبيقًا مجانيًا على Meta. يستغرق نحو عشر دقائق، ثم مراجعة Meta قبل أن يربط الآخرون حساباتهم.',
       s1: 'افتح developers.facebook.com وأنشئ تطبيقًا (النوع Business)، وأضف المنتج “Instagram” ثم “API setup with Instagram login”.', s2: 'يجب أن يكون حسابك على إنستغرام من نوع Business أو Creator (مجاني، من الإعدادات ← نوع الحساب).',
       s3: 'في إعدادات Business login الصق العناوين الثلاثة أدناه.', s4: 'انسخ معرّف تطبيق إنستغرام وسرّه إلى متغيرات Netlify ثم أعد النشر.', s5: 'إلى أن يجتاز التطبيق مراجعة Meta، لا يربط إلا الحسابات التي تضيفها كمختبِرين. أضف نفسك من Roles.',
